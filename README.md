@@ -8,8 +8,11 @@
 Greenly helps you discover and create sustainable alternatives to cosmetics and cleaning products. Save money, protect the environment, and share your experiences with the community!
 
 # Introduction
+- [Screenshots](#screenshots)
 - [Installation](#installation)
 - [Features](#features)
+- [Swift Technology Implementation](#swifttechnologyimplementation)
+- [Contact/Authors](#contact/authors)
 
 ## Instalattion
 
@@ -37,3 +40,7 @@ git clone https://github.com/KimReuter/Greenly.git
 - Comparison Tool – Compare environmental impact & costs vs. conventional products
 - Community Section – Share experiences and tips with like-minded people
 - Modern, Nature-Inspired Design – Clean, intuitive interface for a great user experience
+
+## Swift Technology Implementation
+
+[MVVM Pattern](https://www.geeksforgeeks.org/introduction-to-model-view-view-model-mvvm/)
