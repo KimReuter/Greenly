@@ -11,7 +11,7 @@ Greenly helps you discover and create sustainable alternatives to cosmetics and 
 - [Screenshots](#screenshots)
 - [Installation](#installation)
 - [Features](#features)
-- [Swift Technology Implementation](#swifttechnologyimplementation)
+- [Swift Technology Implementation](#swift-technology-implementation)
 - [Contact/Authors](#contact/authors)
 
 ## Instalattion
