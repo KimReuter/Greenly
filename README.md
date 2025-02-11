@@ -1,3 +1,6 @@
+![Cosmetic made by you](https://github.com/user-attachments/assets/375f1e63-3284-49ca-a0ff-b55bd58ddb00)
+
+
 ****Greenly is a Swift-based Application for more Sustainability****
 
 # Overview
