@@ -5,8 +5,8 @@
 Greenly helps you discover and create sustainable alternatives to cosmetics and cleaning products. Save money, protect the environment, and share your experiences with the community!
 
 
-[Installation](#installation)
-[Features](#features)
+- [Installation](#installation)
+- [Features](#features)
 
 ## Instalattion
 
