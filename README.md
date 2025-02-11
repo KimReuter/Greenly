@@ -14,9 +14,11 @@ Greenly helps you discover and create sustainable alternatives to cosmetics and 
 - [Swift Technology Implementation](#swift-technology-implementation)
 - [Contact/Authors](#contact/authors)
 
-## Instalattion
+## 1️⃣ Screenshots
 
-## 1️⃣ Run the Project in Xcode
+## 2️⃣ Instalattion
+
+### Run the Project in Xcode
 
 If you want to run the project locally on your Mac using Xcode:
 
@@ -33,7 +35,7 @@ git clone https://github.com/KimReuter/Greenly.git
 
 🔹 Best for: Developers who want to test or modify the project.
 
-## Features
+## 3️⃣ Features
 
 - ***DIY Recipes*** – Create your own sustainable cosmetics & cleaning products
 - ***Ingredient Database*** – Learn about natural ingredients and their benefits
@@ -41,7 +43,7 @@ git clone https://github.com/KimReuter/Greenly.git
 - ***Community Section*** – Share experiences and tips with like-minded people
 - ***Modern, Nature-Inspired Design*** – Clean, intuitive interface for a great user experience
 
-## Swift Technology Implementation
+## 4️⃣ Swift Technology Implementation
 
 ### UI & Architecture
 [SwiftUI – Used for a modern, declarative, and responsive user interface](https://developer.apple.com/xcode/swiftui/)
@@ -71,6 +73,6 @@ Easier Approach: Firebase Firestore with simple rule-based filtering (e.g., show
 Advanced Approach: Core ML for machine learning-based personalized recommendations (would require training a model)
 Recommendation: Start with the rule-based approach in Firebase and expand later with Core ML for a more advanced experience
 
-## Contact/Authors
+## 5️⃣ Contact/Authors
 
 [Kim Reuter](https://github.com/KimReuter)
