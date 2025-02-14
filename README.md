@@ -67,9 +67,9 @@ git clone https://github.com/KimReuter/Greenly.git
 [Firebase Authentication](https://firebase.google.com/docs/auth?hl=de)
 
 ### AI & Smart Features (Future Implementation)
-Personalized Recipe Suggestions (Planned) –
-Easier Approach: Firebase Firestore with simple rule-based filtering (e.g., show recipes based on user preferences)
-Advanced Approach: Core ML for machine learning-based personalized recommendations (would require training a model)
+Personalized Recipe Suggestions (Planned)  
+Easier Approach: Firebase Firestore with simple rule-based filtering (e.g., show recipes based on user preferences)  
+Advanced Approach: Core ML for machine learning-based personalized recommendations (would require training a model)  
 Recommendation: Start with the rule-based approach in Firebase and expand later with Core ML for a more advanced experience
 
 ## 5️⃣ Contact/Authors
