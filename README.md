@@ -45,17 +45,17 @@ git clone https://github.com/KimReuter/Greenly.git
 ## 4️⃣ Swift Technology Implementation
 
 ### UI & Architecture
-[SwiftUI](https://developer.apple.com/xcode/swiftui/)
-[Swipe Gestures](https://developer.apple.com/documentation/uikit/handling-swipe-gestures)
+[SwiftUI](https://developer.apple.com/xcode/swiftui/)  
+[Swipe Gestures](https://developer.apple.com/documentation/uikit/handling-swipe-gestures)  
 [Lottie Animations (Planned)](https://lottiefiles.com/what-is-lottie)
 
 ### Data Storage & Cloud Synchronization
 
-[Firebase Firestore](https://firebase.google.com/docs/firestore?hl=de)
+[Firebase Firestore](https://firebase.google.com/docs/firestore?hl=de)  
 [Firebase Authentication](https://firebase.google.com/docs/auth?hl=de)
 
 ### Networking & API Integration
-[URLSession](https://developer.apple.com/documentation/foundation/urlsession)
+[URLSession](https://developer.apple.com/documentation/foundation/urlsession)  
 
 ### Community & User Interaction (Future Implementation)
 [Firebase Firestore](https://firebase.google.com/docs/firestore?hl=de)
