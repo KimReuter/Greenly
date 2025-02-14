@@ -36,11 +36,11 @@ git clone https://github.com/KimReuter/Greenly.git
 
 ## 3️⃣ Features
 
-- ***DIY Recipes*** – Create your own sustainable cosmetics & cleaning products
-- ***Ingredient Database*** – Learn about natural ingredients and their benefits
-- ***Comparison Tool*** – Compare environmental impact & costs vs. conventional products
-- ***Community Section*** – Share experiences and tips with like-minded people
-- ***Modern, Nature-Inspired Design*** – Clean, intuitive interface for a great user experience
+- ***DIY Recipes*** – Create your own sustainable cosmetics & cleaning products 👩🏽‍🍳
+- ***Ingredient Database*** – Learn about natural ingredients and their benefits 🍯
+- ***Comparison Tool*** – Compare environmental impact & costs vs. conventional products 💰
+- ***Community Section*** – Share experiences and tips with like-minded people 👫
+- ***Modern, Nature-Inspired Design*** – Clean, intuitive interface for a great user experience ✨
 
 ## 4️⃣ Swift Technology Implementation
 
