@@ -15,26 +15,8 @@ Greenly helps you discover and create sustainable alternatives to cosmetics and 
 
 ## 1️⃣ Screenshots
 
-## 2️⃣ Instalattion
 
-### Run the Project in Xcode
-
-If you want to run the project locally on your Mac using Xcode:
-
-### Steps:
-
-1. Clone the repository:
-```swift
-git clone https://github.com/KimReuter/Greenly.git
-```
-2.	Open the project in Xcode:
-	•	Double-click the .xcodeproj file.
-3.	Select a target device (simulator or real device).
-4.	Run the project by pressing Cmd + R or clicking the ▶️ button in Xcode.
-
-🔹 Best for: Developers who want to test or modify the project.
-
-## 3️⃣ Features
+## 2️⃣ Features
 
 - ***DIY Recipes*** – Create your own sustainable cosmetics & cleaning products 👩🏽‍🍳
 - ***Ingredient Database*** – Learn about natural ingredients and their benefits 🍯
@@ -42,7 +24,7 @@ git clone https://github.com/KimReuter/Greenly.git
 - ***Community Section*** – Share experiences and tips with like-minded people 👫
 - ***Modern, Nature-Inspired Design*** – Clean, intuitive interface for a great user experience ✨
 
-## 4️⃣ Swift Technology Implementation
+## 3️⃣ Swift Technology Implementation
 
 ### UI & Architecture
 [SwiftUI](https://developer.apple.com/xcode/swiftui/)  
@@ -72,6 +54,25 @@ Easier Approach: Firebase Firestore with simple rule-based filtering (e.g., show
 Advanced Approach: Core ML for machine learning-based personalized recommendations (would require training a model)  
 Recommendation: Start with the rule-based approach in Firebase and expand later with Core ML for a more advanced experience
 
+## 4️⃣ Instalattion
+
+### Run the Project in Xcode
+
+If you want to run the project locally on your Mac using Xcode:
+
+### Steps:
+
+1. Clone the repository:
+```swift
+git clone https://github.com/KimReuter/Greenly.git
+```
+2.	Open the project in Xcode:
+	•	Double-click the .xcodeproj file.
+3.	Select a target device (simulator or real device).
+4.	Run the project by pressing Cmd + R or clicking the ▶️ button in Xcode.
+
+🔹 Best for: Developers who want to test or modify the project.
+
 ## 5️⃣ Contact/Authors
 
-[XING]([https://github.com/KimReuter](https://www.xing.com/profile/Kim_Reuter019991/web_profiles?sc_o=navigation_profile&sc_o_PropActionOrigin=navigation_badge_no_badge))
+[XING](https://www.xing.com/profile/Kim_Reuter019991/web_profiles?sc_o=navigation_profile&sc_o_PropActionOrigin=navigation_badge_no_badge)
