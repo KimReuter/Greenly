@@ -1,5 +1,4 @@
-![Cosmetic made by you](https://github.com/user-attachments/assets/375f1e63-3284-49ca-a0ff-b55bd58ddb00)
-
+![Design ohne Titel-4](https://github.com/user-attachments/assets/39e410bf-633f-472c-8423-be8b345c03c8)
 
 ****Greenly is a Swift-based Application for more Sustainability****
 
@@ -46,26 +45,26 @@ git clone https://github.com/KimReuter/Greenly.git
 ## 4️⃣ Swift Technology Implementation
 
 ### UI & Architecture
-[SwiftUI – Used for a modern, declarative, and responsive user interface](https://developer.apple.com/xcode/swiftui/)
-[Swipe Gestures – Implemented for intuitive navigation](https://developer.apple.com/documentation/uikit/handling-swipe-gestures)
-[Lottie Animations (Planned) – Will be used to enhance the user experience with smooth animations](https://lottiefiles.com/what-is-lottie)
+[SwiftUI](https://developer.apple.com/xcode/swiftui/)
+[Swipe Gestures](https://developer.apple.com/documentation/uikit/handling-swipe-gestures)
+[Lottie Animations (Planned)](https://lottiefiles.com/what-is-lottie)
 
 ### Data Storage & Cloud Synchronization
 
-[Firebase Firestore – Stores user data, recipes, and ingredient details](https://firebase.google.com/docs/firestore?hl=de)
-[Firebase Authentication – Manages user login and authentication securely](https://firebase.google.com/docs/auth?hl=de)
+[Firebase Firestore](https://firebase.google.com/docs/firestore?hl=de)
+[Firebase Authentication](https://firebase.google.com/docs/auth?hl=de)
 
 ### Networking & API Integration
-[URLSession – Fetches external data (e.g., ingredient details, sustainability information)](https://developer.apple.com/documentation/foundation/urlsession)
+[URLSession](https://developer.apple.com/documentation/foundation/urlsession)
 
 ### Community & User Interaction (Future Implementation)
-[Firebase Firestore – Enables user discussions and content sharing within the community section](https://firebase.google.com/docs/firestore?hl=de)
+[Firebase Firestore](https://firebase.google.com/docs/firestore?hl=de)
 
 ### Performance & Background Processing
-[Swift Concurrency (async/await) – Ensures smooth and efficient background data fetching and processing](https://docs.swift.org/swift-book/documentation/the-swift-programming-language/concurrency/)
+[Swift Concurrency](https://docs.swift.org/swift-book/documentation/the-swift-programming-language/concurrency/)
 
 ### Security & Privacy
-[Firebase Authentication – Manages user authentication and login securely](https://firebase.google.com/docs/auth?hl=de)
+[Firebase Authentication](https://firebase.google.com/docs/auth?hl=de)
 
 ### AI & Smart Features (Future Implementation)
 Personalized Recipe Suggestions (Planned) –
