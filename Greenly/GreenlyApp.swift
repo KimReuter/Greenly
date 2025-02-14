@@ -6,12 +6,26 @@
 //
 
 import SwiftUI
+import FirebaseCore
 
 @main
 struct GreenlyApp: App {
+    
+    @State var authVM: AuthenticationViewModel
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            if !authVM.isUserSignedIn {
+                AuthenticationView(authVM: authVM)
+            } else {
+                HomeView()
+            }
         }
     }
+    
+    init() {
+        FirebaseApp.configure()
+        authVM = AuthenticationViewModel()
+    }
+    
 }

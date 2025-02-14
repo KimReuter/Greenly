@@ -1,0 +1,10 @@
+#disabled_rules:
+#  - trailing_whitespace
+#  - vertical_whitespace
+#
+#line_length:
+#    warning: 80
+#    error: 120
+#    ignores_function_declarations: true
+#    ignores_comments: true
+#    ignores_urls: true
