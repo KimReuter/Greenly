@@ -74,4 +74,4 @@ Recommendation: Start with the rule-based approach in Firebase and expand later 
 
 ## 5️⃣ Contact/Authors
 
-[Kim Reuter](https://github.com/KimReuter)
+[XING]([https://github.com/KimReuter](https://www.xing.com/profile/Kim_Reuter019991/web_profiles?sc_o=navigation_profile&sc_o_PropActionOrigin=navigation_badge_no_badge))
