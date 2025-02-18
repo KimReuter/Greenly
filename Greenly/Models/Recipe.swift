@@ -19,7 +19,8 @@ struct Recipe: Codable, Identifiable {
     var preparationTime: Int
     var difficulty: Difficulty
     var preparationSteps: [PreparationStepType]
-    var picture: Data
+    var pictureURL: String?
     var tags: [String]
+    var createdByAdmin: Bool
     
 }

@@ -19,7 +19,7 @@ struct GreenlyApp: App {
             if !authVM.isUserSignedIn {
                 AuthenticationView(authVM: authVM)
             } else {
-                NavigationView(authVM: authVM)
+                NavigationView(authVM: authVM, recipeVM: recipeVM)
             }
         }
     }

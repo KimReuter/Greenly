@@ -6,10 +6,13 @@
 //
 
 import FirebaseFirestore
+import FirebaseStorage
 
 class FirestoreManager {
     
     let db = Firestore.firestore()
+    
+    private let storage = Storage.storage()
     
     func addPredefinedRecipe(_ recipe: Recipe) async throws {
         let recipeRef = db.collection("recipes").document(recipe.id.uuidString)
@@ -47,6 +50,18 @@ class FirestoreManager {
         try await userRef.updateData([
             "favoriteRecipeIDs": FieldValue.arrayRemove([recipeID])
         ])
+    }
+    
+    func uploadImage(_ imageData: Data, recipeID: String) async throws -> String {
+        let storageRef = storage.reference().child("recipeImages/\(recipeID).jpg")
+        do {
+            let metadata = StorageMetadata()
+            metadata.contentType = "image/jpeg"
+            _ = try await storageRef.downloadURL()
+            return downloadURL.absoluteString
+        } catch {
+            throw error
+        }
     }
     
 }

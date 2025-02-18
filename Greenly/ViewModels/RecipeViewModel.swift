@@ -45,16 +45,21 @@ final class RecipeViewModel {
     }
 
     
-    func addRecipe(_ recipe: Recipe) async {
-        guard let userID = Auth.auth().currentUser?.uid else {
-            errorMessage = "Nos user logged in"
-            return
-        }
+    func addRecipe(_ recipe: Recipe, imageData: Data?) async throws {
+        let recipeRef = Firestore.firestore().collection("recipes").document(recipe.id.uuidString)
         do {
-            try await firestoreManager.addUserRecipe(recipe, userID: userID)
-            recipes.append(recipe)
+            var newRecipe = recipe
+            newRecipe.pictureURL = nil
+            newRecipe.createdByAdmin = isAdmin()
+            try await recipeRef.setData(from: newRecipe)
+            if let imageData = imageData {
+                let imageURL = try await FirestoreManager().uploadImage(imageData, recipeID: recipe.id.uuidString)
+                try await recipeRef.updateData(["pictureURL": imageURL])
+            }
+            print("Recipe succesfully uploaded!")
         } catch {
-            errorMessage = "Error adding recipe: \(error.localizedDescription)"
+            try await recipeRef.delete()
+            throw error
         }
     }
     
