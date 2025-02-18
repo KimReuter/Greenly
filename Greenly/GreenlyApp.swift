@@ -12,13 +12,14 @@ import FirebaseCore
 struct GreenlyApp: App {
     
     @State var authVM: AuthenticationViewModel
+    @State var recipeVM: RecipeViewModel
     
     var body: some Scene {
         WindowGroup {
             if !authVM.isUserSignedIn {
                 AuthenticationView(authVM: authVM)
             } else {
-                HomeView()
+                NavigationView(authVM: authVM)
             }
         }
     }
@@ -26,6 +27,7 @@ struct GreenlyApp: App {
     init() {
         FirebaseApp.configure()
         authVM = AuthenticationViewModel()
+        recipeVM = RecipeViewModel()
     }
     
 }

@@ -10,6 +10,7 @@ import SwiftUI
 struct AuthenticationView: View {
     
     @Bindable var authVM: AuthenticationViewModel
+    @State private var isLogin = true
     
     var body: some View {
         NavigationStack {
@@ -20,15 +21,27 @@ struct AuthenticationView: View {
                     .scaledToFill()
                     .ignoresSafeArea()
                 VStack {
+                    Text(isLogin ? "Login" : "Registrieren")
+                                    .font(.largeTitle)
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(.white)
                     Section {
                         TextField("E-Mail", text: $authVM.email)
                             .authTextFieldStyle()
-                        TextField("Password", text: $authVM.password)
+                        SecureField("Password", text: $authVM.password)
                             .authTextFieldStyle()
                     }
-                    CreateButton(label: "Login") {
-                        authVM.signIn()
+                    CreateButton(label: isLogin ? "Login" : "Registrieren") {
+                        isLogin ? authVM.signIn() : authVM.signUp()
                     }
+                    Button(action: {
+                                    isLogin.toggle() // Umschalten zwischen Login und Registrierung
+                                }) {
+                                    Text(isLogin ? "Noch keinen Account? Jetzt registrieren!" : "Bereits registriert? Hier einloggen!")
+                                        .foregroundColor(.white)
+                                        .underline()
+                                }
+                    
                     
                 }
                 .padding()

@@ -12,5 +12,6 @@ struct User: Codable, Identifiable {
     var id: String
     var email: String
     var signedUpOn: Date
+    var favoriteRecipeIDs: [String]
     
 }
