@@ -1,18 +1,18 @@
 //
-//  RecipeDetailView.swift
+//  PasswordRequirement.swift
 //  Greenly
 //
-//  Created by Kim Reuter on 24.02.25.
+//  Created by Kim Reuter on 20.02.25.
 //
 
 import SwiftUI
 
-struct RecipeDetailView: View {
+struct PasswordRequirement: View {
     var body: some View {
         Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
     }
 }
 
 #Preview {
-    RecipeDetailView()
+    PasswordRequirement()
 }
