@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import Observation
+import RegexBuilder
 
 @Observable
 final class AuthenticationViewModel {
@@ -14,7 +14,9 @@ final class AuthenticationViewModel {
     var user: User?
     var errorMessage: String?
     var email: String = ""
-    var password: String = ""
+    var password: String = "" 
+    var name: String = ""
+    var isLogin = true
     
     var isUserSignedIn: Bool {
         AuthManager.shared.isUserSignedIn
@@ -27,12 +29,17 @@ final class AuthenticationViewModel {
     }
     
     func signUp() {
+        guard AuthManager.shared.isValidPassword(password) else {
+            errorMessage = "Passwort erfüllt nicht alle Anforderungen"
+            return
+        }
         Task {
             do {
-                try await AuthManager.shared.signUp(email: email, password: password)
+                try await AuthManager.shared.signUp(email: email, password: password, name: name)
                 let userID = AuthManager.shared.userID!
                 let email = AuthManager.shared.email!
-                self.user = try await userRepository.insert(id: userID, email: email, createdOn: .now)
+
+                self.user = try await userRepository.insert(id: userID, email: email, name: name, createdOn: .now)
                 errorMessage = nil
             } catch {
                 errorMessage = error.localizedDescription
@@ -65,10 +72,12 @@ final class AuthenticationViewModel {
                     user = try await userRepository.find(by: userID)
                 }
             } catch {
-                errorMessage = "User is not signed in."
+                errorMessage = error.localizedDescription
             }
         }
     }
+    
+    
     
     private let userRepository = UserRepository()
 

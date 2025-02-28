@@ -6,19 +6,19 @@
 //
 
 import Foundation
+import FirebaseFirestore
 
 struct Ingredient: Codable, Identifiable {
-    
-    var id: UUID
+    @DocumentID var id: String?
     var name: String
-    var quantity: Double
-    var unit: MeasurementUnit
-    var category: IngredientCategory
-    var meltingPoint: Double?
-    var shelfLive: String?
-    var origin: String?
-    var description: String?
-    var benefits: [String]?
-    var warnings: [String]?
+//    var quantity: Double
+//    var unit: MeasurementUnit
+//    var category: IngredientCategory
+//    var meltingPoint: Double?
+//    var shelfLive: String?
+//    var origin: String?
+//    var description: String?
+//    var benefits: [String]?
+//    var warnings: [String]?
     
 }

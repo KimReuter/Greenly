@@ -31,6 +31,4 @@ struct PasswordRequirement: View {
     }
 }
 
-#Preview {
-    PasswordRequirement(passwordErrors: [""])
-}
+

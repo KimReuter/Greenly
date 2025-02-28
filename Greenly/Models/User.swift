@@ -6,12 +6,13 @@
 //
 
 import Foundation
+import FirebaseFirestore
 
 struct User: Codable, Identifiable {
+    @DocumentID var id: String?
     
-    var id: String
+    var name: String
     var email: String
     var signedUpOn: Date
     var favoriteRecipeIDs: [String]
-    
 }

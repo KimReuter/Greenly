@@ -16,11 +16,11 @@ struct GreenlyApp: App {
     
     var body: some Scene {
         WindowGroup {
-            if !authVM.isUserSignedIn {
-                AuthenticationView(authVM: authVM)
-            } else {
-                NavigationView(authVM: authVM, recipeVM: recipeVM)
-            }
+//            if !authVM.isUserSignedIn {
+//                AuthenticationView(authVM: authVM)
+//            } else {
+            NavigationView(authVM: authVM, recipeVM: recipeVM)
+//            }
         }
     }
     

@@ -10,6 +10,7 @@ import SwiftUI
 struct AuthTextFieldModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
+            .frame(height: 25)
             .padding()
             .background(Color.white.opacity(0.8))
             .cornerRadius(10)

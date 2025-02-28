@@ -6,21 +6,23 @@
 //
 
 import Foundation
-import SwiftUICore
+import FirebaseFirestore
 
 struct Recipe: Codable, Identifiable {
+    @DocumentID var id: String?
     
-    var id: UUID
     var name: String
     var description: String
-    var category: RecipeCategory
-    var author: String
-    var ingredients: [Ingredient]
-    var preparationTime: Int
-    var difficulty: Difficulty
-    var preparationSteps: [PreparationStepType]
-    var pictureURL: String?
-    var tags: [String]
-    var createdByAdmin: Bool
+    var category: [RecipeCategory]
+    var ingredients: [Ingredient]?
+    //    var author: String
+    //    var preparationTime: Int
+    //    var difficulty: Difficulty
+    //    var preparationSteps: [PreparationStepType]
+    //    var pictureURL: String?
+    //    var tags: [String]
+    //    var createdByAdmin: Bool
     
 }
+
+

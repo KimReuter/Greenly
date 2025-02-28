@@ -8,11 +8,35 @@
 import SwiftUI
 
 struct PasswordField: View {
+    @Binding var password: String
+    @Binding var isPasswordVisible: Bool
+    var isLogin: Bool
+    @Binding var passwordErrors: [String]
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        HStack {
+            if isPasswordVisible {
+                TextField("Password", text: $password)
+                    .textContentType(.password)
+            } else {
+                SecureField("Password", text: $password)
+                    .textContentType(.password)
+            }
+            Button {
+                withAnimation { isPasswordVisible.toggle() }
+            } label: {
+                Image(systemName: isPasswordVisible ? "eye.fill" : "eye.slash")
+                    .foregroundStyle(.green)
+            }
+        }
+        .authTextFieldStyle()
+        .onChange(of: password) { _, newPassword in
+            if !isLogin {
+                passwordErrors = AuthManager.shared.getPasswordRequirements(newPassword)
+            }
+        }
     }
 }
-
-#Preview {
-    PasswordField()
-}
+                  
+                  
+                  
