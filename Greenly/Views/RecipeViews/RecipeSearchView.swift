@@ -18,11 +18,19 @@ struct RecipeSearchView: View {
                     TextField("Suchtext eingeben...", text: $recipeVM.searchQuery)
                 }
                 
-                Section(header: Text("Kategorie wählen")) {
-                    Picker("Kategorie", selection: $recipeVM.selectedCategory) {
-                        Text("Alle Kategorien").tag(nil as RecipeCategory?)
-                        ForEach(RecipeCategory.allCases, id: \.self) { category in
-                            Text(category.name).tag(category as RecipeCategory?)
+                Section(header: Text("Kategorien wählen")) {
+                    ForEach(RecipeCategory.allCases, id: \.self) { category in
+                        Toggle(isOn: Binding(
+                            get: { recipeVM.selectedCategory.contains(category) },
+                            set: { isSelected in
+                                if isSelected {
+                                    recipeVM.selectedCategory.insert(category) // ✅ Korrekt für Set
+                                } else {
+                                    recipeVM.selectedCategory.remove(category) // ✅ Entfernen aus Set
+                                }
+                            }
+                        )) {
+                            Text(category.name)
                         }
                     }
                 }

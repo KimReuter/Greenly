@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum RecipeCategory: String, Codable, CaseIterable {
+enum RecipeCategory: String, Codable, CaseIterable, Hashable {
     
     case facialCare = "facialCare"
     case hairCare = "hairCare"

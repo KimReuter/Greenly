@@ -41,15 +41,7 @@ struct RecipeDetailView: View {
                                 Image(systemName: "square.and.arrow.up")
                                     .foregroundColor(.white)
                             }
-                            Button {
-                                Task {
-                                    await recipeVM.toggleFavorite(recipe: recipe)
-                                }
-                            } label: {
-                                Image(systemName: recipeVM.isRecipeFavorite(recipe) ? "heart.fill" : "heart")
-                                    .foregroundColor(.white)
-                            }
-                            
+                        
                             Button(action: { addToCart() }) {
                                 Image(systemName: "cart")
                                     .foregroundColor(.white)

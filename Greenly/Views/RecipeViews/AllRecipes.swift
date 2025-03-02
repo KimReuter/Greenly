@@ -11,45 +11,75 @@ struct AllRecipes: View {
     @Bindable var recipeVM: RecipeViewModel
     @State private var showCreateRecipeSheet = false
     @State private var showSearchSheet = false
-    
+
+    let columns: [GridItem] = [
+        GridItem(.flexible(), spacing: 16),
+        GridItem(.flexible(), spacing: 16)
+    ]
+
     var body: some View {
         NavigationStack {
-            ScrollView(.vertical, showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 20) {
-                    ForEach(RecipeCategory.allCases, id: \.self) { category in
-                        let filteredRecipes = recipeVM.filteredRecipes.filter { $0.category.contains(category) }
-                        if !filteredRecipes.isEmpty {
-                            CategorySection(category: category, recipes: filteredRecipes, recipeVM: recipeVM)
+            VStack {
+                // 🔹 Falls Filter aktiv sind, zeigen wir sie als "Tags" an
+                if !recipeVM.searchQuery.isEmpty || !recipeVM.selectedCategory.isEmpty || !recipeVM.selectedIngredient.isEmpty {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack {
+                            if !recipeVM.searchQuery.isEmpty {
+                                FilterTag(text: recipeVM.searchQuery, filterType: .searchQuery, recipeVM: recipeVM)
+                            }
+                            if !recipeVM.selectedCategory.isEmpty {
+                                ForEach(Array(recipeVM.selectedCategory), id: \.self) { category in
+                                    FilterTag(text: category.name, filterType: .category, recipeVM: recipeVM)
+                                }
+                            }
+                            if !recipeVM.selectedIngredient.isEmpty {
+                                FilterTag(text: recipeVM.selectedIngredient, filterType: .ingredient, recipeVM: recipeVM)
+                            }
+                        }
+                        .padding()
+                    }
+                }
+
+                // 🔹 Alle Rezepte anzeigen (ohne direkte Sortierung)
+                ScrollView {
+                    LazyVGrid(columns: columns, spacing: 16) {
+                        ForEach(recipeVM.filteredRecipes) { recipe in
+                            NavigationLink(destination: RecipeDetailView(recipe: recipe, recipeVM: recipeVM)) {
+                                RecipeCardView(recipe: recipe)
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+                .padding(.bottom, 80)
+                .navigationTitle("Alle Rezepte")
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        HStack {
+                            Button {
+                                showSearchSheet = true
+                            } label: {
+                                Image(systemName: "magnifyingglass")
+                            }
+
+                            Button {
+                                showCreateRecipeSheet = true
+                            } label: {
+                                Image(systemName: "plus")
+                            }
                         }
                     }
                 }
-            }
-            .padding(.bottom, 80)
-            .navigationTitle("Alle Rezepte")
-            .globalBackground()
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    HStack {
-                        Button {
-                            showSearchSheet = true
-                        } label: {
-                            Image(systemName: "magnifyingglass")
-                        }
-                        
-                        Button {
-                            showCreateRecipeSheet = true
-                        } label: {
-                            Image(systemName: "plus")
-                        }
-                    }
+                .sheet(isPresented: $showSearchSheet) {
+                    RecipeSearchView(recipeVM: recipeVM, isPresented: $showSearchSheet)
+                        .presentationDetents([.medium, .large])
+                }
+                .sheet(isPresented: $showCreateRecipeSheet) {
+                    CreateRecipeView()
+                        .presentationDetents([.medium, .large])
                 }
             }
-            .sheet(isPresented: $showSearchSheet) {
-                RecipeSearchView(recipeVM: recipeVM, isPresented: $showSearchSheet)
-            }
-            .sheet(isPresented: $showCreateRecipeSheet) {
-                CreateRecipeView()
-            }
+            .background(Color("background"))
         }
     }
 }

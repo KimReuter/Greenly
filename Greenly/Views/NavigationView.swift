@@ -11,7 +11,7 @@ struct NavigationView: View {
     @Bindable var authVM: AuthenticationViewModel
     @Bindable var recipeVM: RecipeViewModel
     @State private var selectedTab = 0
-    let tabIcons = ["house.fill", "book.fill", "heart.fill"]
+    let tabIcons = ["house.fill", "book.fill", "person.crop.circle"]
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -21,8 +21,7 @@ struct NavigationView: View {
 
                 AllRecipes(recipeVM: recipeVM)
                     .tag(1)
-
-                FavoriteRecipes(recipeVM: recipeVM)
+                ProfileView(authVM: authVM, recipeVM: recipeVM)
                     .tag(2)
             }
             .ignoresSafeArea(.all, edges: .bottom)

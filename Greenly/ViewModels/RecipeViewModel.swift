@@ -14,37 +14,29 @@ final class RecipeViewModel {
     
     var recipes: [Recipe] = []
     var categorie: [RecipeCategory] = []
-    var favoriteRecipes: [Recipe] = []
     var filteredRecipes: [Recipe] = []
     var ingredients: [Ingredient] = []
     var errorMessage: String?
     
     var searchQuery: String = "" // Suchtext (Name oder Beschreibung)
-    var selectedCategory: RecipeCategory? = nil // Gewählte Kategorie
+    var selectedCategory: Set<RecipeCategory> = [] // ✅ Set
     var selectedIngredient: String = "" // Gesuchte Zutat
     
     
     func applyFilters() async {
-            await MainActor.run {
-                self.filteredRecipes = self.recipes.filter { recipe in
-                    let matchesSearchText = self.searchQuery.isEmpty ||
-                        recipe.name.localizedCaseInsensitiveContains(self.searchQuery) ||
-                        recipe.description.localizedCaseInsensitiveContains(self.searchQuery)
-                    
-                    let matchesCategory = self.selectedCategory == nil ||
-                        recipe.category.contains(self.selectedCategory!)
-                    
-                    let matchesIngredient = self.selectedIngredient.isEmpty ||
-                        (recipe.ingredients?.contains { $0.name.localizedCaseInsensitiveContains(self.selectedIngredient) } ?? false)
+        filteredRecipes = recipes.filter { recipe in
+            let matchesSearchText = searchQuery.isEmpty ||
+                recipe.name.localizedCaseInsensitiveContains(searchQuery) ||
+                recipe.description.localizedCaseInsensitiveContains(searchQuery)
+            
+            let matchesCategory = selectedCategory.isEmpty ||
+                recipe.category.contains { selectedCategory.contains($0) }
+            
+            let matchesIngredient = (selectedIngredient.isEmpty) ||
+                (recipe.ingredients?.contains { $0.name.localizedCaseInsensitiveContains(selectedIngredient) } ?? false)
 
-                    return matchesSearchText && matchesCategory && matchesIngredient
-                }
-            }
+            return matchesSearchText && matchesCategory && matchesIngredient
         }
-    
-    func isRecipeFavorite(_ recipe: Recipe) -> Bool {
-        let isFav = favoriteRecipes.contains { $0.id == recipe.id }
-        return isFav
     }
     
     func fetchRecipes() async {
@@ -57,46 +49,20 @@ final class RecipeViewModel {
         }
     }
     
-    func addFavoriteRecipe(recipeID: String) async {
-        do {
-            try await recipeManager.addFavoriteRecipe(recipeID)
-            await fetchFavoriteRecipes()
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-    }
-    
-    func fetchFavoriteRecipes() async {
-        do {
-            let loadedFavorites = try await recipeManager.fetchFavoriteRecipes()
-            favoriteRecipes = loadedFavorites
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-    }
-    
-    func toggleFavorite(recipe: Recipe) async {
-        guard let recipeID = recipe.id else { return }
-        
-        if isRecipeFavorite(recipe) {
-            do {
-                try await recipeManager.removeFavoriteRecipe(recipeID)
-                favoriteRecipes.removeAll { $0.id == recipeID }
-                try await Task.sleep(nanoseconds: 300_000_000)
-                await fetchFavoriteRecipes()
-            } catch {
-                errorMessage = error.localizedDescription
+    func clearFilter(_ filterType: FilterType) async {
+        switch filterType {
+        case .searchQuery:
+            searchQuery = ""
+        case .category:
+            // 🔥 Nur die eine Kategorie entfernen, nicht alle!
+            if let firstCategory = selectedCategory.first {
+                selectedCategory.remove(firstCategory)
             }
-        } else {
-            do {
-                try await recipeManager.addFavoriteRecipe(recipeID)
-                favoriteRecipes.append(recipe)
-                try await Task.sleep(nanoseconds: 300_000_000)
-                await fetchFavoriteRecipes()
-            } catch {
-                errorMessage = error.localizedDescription
-            }
+        case .ingredient:
+            selectedIngredient = ""
         }
+
+        await applyFilters() // 🔥 Aktualisiere nur mit den noch gesetzten Filtern
     }
     
     func getRecipes(for category: RecipeCategory) -> [Recipe] {
