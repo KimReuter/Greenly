@@ -14,8 +14,6 @@ struct RecipeDetailView: View {
     @State private var selectedTab: Int = 0
     
     var body: some View {
-        
-        
         VStack {
             ZStack(alignment: .bottom) {
                 GeometryReader { geometry in
@@ -42,9 +40,12 @@ struct RecipeDetailView: View {
                                     .foregroundColor(.white)
                             }
                         
-                            Button(action: { addToCart() }) {
-                                Image(systemName: "cart")
-                                    .foregroundColor(.white)
+                            Button(action: {
+                                Task {
+                                    await recipeVM.checkAndUpdateShoppingList(for: recipe)
+                                }
+                            }) {
+                                Label("Zum Warenkorb", systemImage: "cart.badge.plus")
                             }
                         }
                     }
@@ -77,13 +78,24 @@ struct RecipeDetailView: View {
             .font(.headline)
             .padding(.horizontal)
             
-            // Zutatenliste oder Wirkstoffe
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
                     if selectedTab == 0 {
-                        ForEach(recipeVM.ingredients, id: \.id) { ingredient in
-                            Text("• \(ingredient.name)")
-                                .font(.body)
+                        if recipeVM.ingredients.isEmpty {
+                            Text("Keine Zutaten vorhanden")
+                                .foregroundColor(.gray)
+                        } else {
+                            ForEach(recipeVM.ingredients, id: \.id) { ingredient in
+                                HStack {
+                                    Text("• \(ingredient.name)")
+                                        .font(.body)
+                                    if let quantity = ingredient.quantity {
+                                        Text("(\(quantity, specifier: "%.2f"))") // 🔥 Menge anzeigen
+                                            .font(.subheadline)
+                                            .foregroundColor(.gray)
+                                    }
+                                }
+                            }
                         }
                     } else {
                         Text("Hier könnten die Wirkstoffe stehen...") // 🔹 Falls du Wirkstoffe hinzufügst
@@ -93,17 +105,20 @@ struct RecipeDetailView: View {
                 .padding()
             }
             .toolbar(.hidden, for: .tabBar)
+            
             CreateButton(label: "Jetzt zubereiten") {
                 prepareRecipe()
             }
             .padding()
         }
-        
         .globalBackground()
         .edgesIgnoringSafeArea(.top)
         .task {
-            await recipeVM.fetchIngredients(for: recipe) // 🔥 Zutaten automatisch laden!
+            print("🛠 Lade Zutaten für Rezept: \(recipe.name)")
+            await recipeVM.fetchIngredients(for: recipe) // ✅ `$` hinzufügen
+            print("✅ Zutaten nach Laden: \($recipeVM.ingredients.count)")
         }
+        
     }
     
     // Funktionen
@@ -111,16 +126,18 @@ struct RecipeDetailView: View {
         print("📤 Rezept teilen")
     }
     
-    func addToCart() {
-        print("🛒 Rezept zur Einkaufsliste hinzufügen")
-    }
-    
     func prepareRecipe() {
         print("🍽 Rezept starten")
     }
-    
 }
 
 #Preview {
-    RecipeDetailView(recipe: Recipe(name: "Heilerde Maske", description: "Eine reinigende Maske für fettige, unreine Haut", category: [.facialCare, .bodyCare]), recipeVM: RecipeViewModel())
+    RecipeDetailView(
+        recipe: Recipe(
+            name: "Heilerde Maske",
+            description: "Eine reinigende Maske für fettige, unreine Haut",
+            category: [.facialCare, .bodyCare]
+        ),
+        recipeVM: RecipeViewModel()
+    )
 }

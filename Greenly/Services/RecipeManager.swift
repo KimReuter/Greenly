@@ -8,117 +8,152 @@
 import Foundation
 import FirebaseAuth
 import FirebaseFirestore
+import FirebaseStorage
 
 @Observable
 final class RecipeManager {
     
-    private let firestoreManager = FirestoreManager()
-    
+    private let db = Firestore.firestore()
+    private let storage = Storage.storage()
+
+    // MARK: - 📥 Rezepte abrufen
     func fetchRecipes() async throws -> [Recipe] {
-        let snapshot = try await firestoreManager.db.collection("recipes").getDocuments()
+        let snapshot = try await db.collection("recipes").getDocuments()
         var recipes: [Recipe] = []
 
         for document in snapshot.documents {
             do {
                 var recipe = try document.data(as: Recipe.self)
-
-                let ingredients = try await firestoreManager.fetchIngredients(forRecipeID: document.documentID)
+                
+                // 🔥 Zutaten aus Unterkollektion abrufen
+                let ingredients = try await fetchIngredients(forRecipeID: document.documentID)
                 recipe.ingredients = ingredients
 
                 recipes.append(recipe)
             } catch {
-                throw Error.decodingRecipeFailed(reason: error.localizedDescription)
+                throw RecipeError.decodingFailed(reason: error.localizedDescription)
             }
         }
         return recipes
     }
-    
-    func addFavoriteRecipe(_ recipeID: String) async throws(Error) {
-        guard let userID = Auth.auth().currentUser?.uid else {
-            throw .noUserLoggedIn(reason: "User must be logged in to add favorites.")
-        }
-        
-        let userRef = firestoreManager.db.collection("users").document(userID)
-        
-        do {
-            let document = try await userRef.getDocument()
-            if !document.exists {
-                try await userRef.setData(["favoriteRecipeIDs": []])
-            }
-            
-            try await userRef.updateData([
-                "favoriteRecipeIDs": FieldValue.arrayUnion([recipeID])
-            ])
-        } catch {
-            throw .fireStoreError(reason: error.localizedDescription)
-        }
-    }
-    
-    func fetchFavoriteRecipes() async throws -> [Recipe] {
-        guard let userID = Auth.auth().currentUser?.uid else {
-            throw Error.noUserLoggedIn(reason: "User must be logged in to fetch favorites")
-        }
-        
-        let favoriteRecipeIDs = try await firestoreManager.getFavoriteRecipes(userID: userID)
-        
-        if favoriteRecipeIDs.isEmpty {
-            return []
-        }
-        
-        var favoriteRecipes: [Recipe] = []
-        for recipeID in favoriteRecipeIDs {
-            let document = try await firestoreManager.db.collection("recipes").document(recipeID).getDocument()
-            if let recipe = try? document.data(as: Recipe.self) {
-                favoriteRecipes.append(recipe)
-            }
-        }
-        return favoriteRecipes
-    }
-    
-    func removeFavoriteRecipe(_ recipeID: String) async throws {
-        guard let userID = Auth.auth().currentUser?.uid else {
-            throw Error.noUserLoggedIn(reason: "User must be logged in to fetch favorites")
-        }
-        
-        let userRef = firestoreManager.db.collection("users").document(userID)
 
-        let document = try await userRef.getDocument()
-        if !document.exists {
-            return
-        }
+    // MARK: - 📥 Zutaten abrufen
+    func fetchIngredients(forRecipeID recipeID: String) async throws -> [Ingredient] {
+        let ingredientsRef = db.collection("recipes").document(recipeID).collection("ingredients")
+
+        print("📂 Firestore Collection Path: recipes/\(recipeID)/ingredients")
         
-        try await userRef.updateData([
-            "favoriteRecipeIDs": FieldValue.arrayRemove([recipeID])
-        ])
+        let snapshot = try await ingredientsRef.getDocuments()
+        
+        print("🔥 Firestore Snapshot Größe: \(snapshot.documents.count)")
+
+        for doc in snapshot.documents {
+            print("📄 Dokument gefunden: \(doc.documentID) - Daten: \(doc.data())")
+        }
+
+        let ingredients = snapshot.documents.compactMap { document -> Ingredient? in
+            guard let name = document["name"] as? String else {
+                print("⚠️ Fehler: Zutat hat keinen Namen! Dokument ID: \(document.documentID)")
+                return nil
+            }
+            let quantity = document["quantity"] as? Double ?? 1.0
+            return Ingredient(name: name, quantity: quantity)
+        }
+
+        print("✅ Zutaten extrahiert: \(ingredients.count)")
+        return ingredients
     }
-    
-    func fetchIngredients(forRecipe recipeID: String) async throws -> [Ingredient] {
-        try await firestoreManager.fetchIngredients(forRecipeID: recipeID)
-    }
-    
+
+    // MARK: - 📤 Rezept erstellen
     func createRecipe(_ recipe: Recipe) async throws {
         guard let userID = Auth.auth().currentUser?.uid else {
-            throw Error.noUserLoggedIn(reason: "User muss eingeloggt sein, um ein Rezept zu erstellen.")
+            throw RecipeError.noUserLoggedIn
         }
-        try await firestoreManager.addUserRecipe(recipe, userID: userID)
-    }
-    
-    enum Error: LocalizedError {
-        case decodingRecipeFailed(reason: String)
-        case addToFavoriteFailed(reason: String)
-        case noUserLoggedIn(reason: String)
-        case fireStoreError(reason: String)
-        
-        var errorDescription: String? {
-            switch self {
-            case .decodingRecipeFailed(let reason): "Decoding Recipe failed: \(reason)"
-            case .addToFavoriteFailed(let reason): "Add to Favorites failed: \(reason)"
-            case .noUserLoggedIn(let  reason): "No User logged in: \(reason)"
-            case .fireStoreError(let reason): "Firestore Error: \(reason)"
-            }
-        }
-    }
-    
 
+        let recipeRef = db.collection("recipes").document() // Neuen Rezept-Dokument erstellen
+        var recipeData = try Firestore.Encoder().encode(recipe)
+        recipeData["author"] = userID
+
+        // 🔥 Zutaten aus der Hauptstruktur entfernen (falls vorhanden)
+        recipeData.removeValue(forKey: "ingredients")
+
+        try await recipeRef.setData(recipeData) // 🔥 Speichert Rezept-Daten OHNE Zutaten als Array!
+
+        // 🔥 Zutaten als Unterkollektion speichern
+        for ingredient in recipe.ingredients ?? [] {
+            let ingredientRef = recipeRef.collection("ingredients").document()
+            try await ingredientRef.setData([
+                "name": ingredient.name,
+                "quantity": ingredient.quantity ?? 0.0 // Falls nil, Standardwert 0.0
+            ])
+            print("✅ Zutat gespeichert: \(ingredient.name)")
+        }
+
+        print("✅ Rezept erfolgreich gespeichert: \(recipe.name)")
+    }
+
+    // MARK: - 🛒 Einkaufsliste verwalten
+    func addIngredientToShoppingList(_ ingredient: Ingredient) async throws {
+        guard let userID = Auth.auth().currentUser?.uid else { throw RecipeError.noUserLoggedIn }
+        
+        let shoppingListRef = db.collection("users").document(userID).collection("shoppingList").document()
+        try await shoppingListRef.setData([
+            "name": ingredient.name,
+            "quantity": ingredient.quantity
+        ])
+    }
+
+    func fetchShoppingList() async throws -> [Ingredient] {
+        guard let userID = Auth.auth().currentUser?.uid else { throw RecipeError.noUserLoggedIn }
+        
+        let snapshot = try await db.collection("users").document(userID).collection("shoppingList").getDocuments()
+        return snapshot.documents.compactMap { try? $0.data(as: Ingredient.self) }
+    }
+
+    func removeIngredientFromShoppingList(_ ingredientID: String) async throws {
+        guard let userID = Auth.auth().currentUser?.uid else { throw RecipeError.noUserLoggedIn }
+        
+        let shoppingListRef = db.collection("users").document(userID).collection("shoppingList").document(ingredientID)
+        try await shoppingListRef.delete()
+    }
+
+    // MARK: - 📦 Vorrat verwalten
+    func addIngredientToInventory(_ ingredient: Ingredient) async throws {
+        guard let userID = Auth.auth().currentUser?.uid else { throw RecipeError.noUserLoggedIn }
+        
+        let inventoryRef = db.collection("users").document(userID).collection("inventory").document()
+        try await inventoryRef.setData([
+            "name": ingredient.name,
+            "quantity": ingredient.quantity
+        ])
+    }
+
+    func fetchInventory() async throws -> [Ingredient] {
+        guard let userID = Auth.auth().currentUser?.uid else { throw RecipeError.noUserLoggedIn }
+        
+        let snapshot = try await db.collection("users").document(userID).collection("inventory").getDocuments()
+        return snapshot.documents.compactMap { try? $0.data(as: Ingredient.self) }
+    }
+
+    func removeIngredientFromInventory(_ ingredientID: String) async throws {
+        guard let userID = Auth.auth().currentUser?.uid else { throw RecipeError.noUserLoggedIn }
+        
+        let inventoryRef = db.collection("users").document(userID).collection("inventory").document(ingredientID)
+        try await inventoryRef.delete()
+    }
+}
+
+// MARK: - 🔥 Fehlerhandling
+enum RecipeError: LocalizedError {
+    case noUserLoggedIn
+    case decodingFailed(reason: String)
     
+    var errorDescription: String? {
+        switch self {
+        case .noUserLoggedIn:
+            return "Kein Benutzer eingeloggt."
+        case .decodingFailed(let reason):
+            return "Fehler beim Dekodieren: \(reason)"
+        }
+    }
 }

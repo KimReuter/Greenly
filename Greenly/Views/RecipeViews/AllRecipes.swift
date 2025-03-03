@@ -75,7 +75,7 @@ struct AllRecipes: View {
                         .presentationDetents([.medium, .large])
                 }
                 .sheet(isPresented: $showCreateRecipeSheet) {
-                    CreateRecipeView()
+                    CreateRecipeView(recipeVM: RecipeViewModel())
                         .presentationDetents([.medium, .large])
                 }
             }
@@ -87,3 +87,5 @@ struct AllRecipes: View {
 #Preview {
     AllRecipes(recipeVM: RecipeViewModel())
 }
+
+

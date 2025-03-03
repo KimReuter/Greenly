@@ -23,7 +23,7 @@ struct FilterTag: View {
             
             Button(action: {
                 Task {
-                    await recipeVM.clearFilter(filterType)
+                    await recipeVM.clearFilter(recipeVM.currentFilter!)
                 }
             }) {
                 Image(systemName: "xmark.circle.fill")
