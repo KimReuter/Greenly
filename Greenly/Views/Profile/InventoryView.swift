@@ -5,37 +5,46 @@
 //  Created by Kim Reuter on 02.03.25.
 //
 
+
 import SwiftUI
 
 struct InventoryView: View {
-    @State private var inventoryItems: [String] = ["Natron", "Sheabutter", "Apfelessig"]
-    @State private var newItem: String = ""
+    @Bindable var recipeVM: RecipeViewModel
+    @State private var newItem = ""
+    @State private var quantity: Double = 0
 
     var body: some View {
         NavigationStack {
             VStack {
-                HStack {
-                    TextField("Zutat hinzufügen...", text: $newItem)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                AddIngredientView(recipeVM: recipeVM)
 
-                    Button(action: addItem) {
-                        Image(systemName: "plus.circle.fill")
-                            .foregroundColor(.green)
-                            .font(.title)
-                    }
-                }
-                .padding()
-
-                List {
-                    ForEach(inventoryItems, id: \.self) { item in
-                        HStack {
-                            Text(item)
-                            Spacer()
-                            Button(action: {
-                                removeItem(item)
-                            }) {
-                                Image(systemName: "trash")
-                                    .foregroundColor(.red)
+                // 🔥 Anzeige des Inventars
+                if recipeVM.inventory.isEmpty {
+                    Text("📦 Dein Vorrat ist leer!")
+                        .foregroundColor(.gray)
+                        .padding()
+                } else {
+                    List {
+                        ForEach(recipeVM.inventory, id: \.name) { ingredient in
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text(ingredient.name)
+                                        .font(.headline)
+                                    if let quantity = ingredient.quantity {
+                                        Text("\(quantity, specifier: "%.2f") verfügbar")
+                                            .font(.subheadline)
+                                            .foregroundColor(.gray)
+                                    }
+                                }
+                                Spacer()
+                                Button(action: {
+                                    Task {
+                                        await recipeVM.removeFromInventory(ingredient.name)
+                                    }
+                                }) {
+                                    Image(systemName: "trash")
+                                        .foregroundColor(.red)
+                                }
                             }
                         }
                     }
@@ -43,19 +52,9 @@ struct InventoryView: View {
             }
             .navigationTitle("📦 Vorrat")
         }
-    }
-
-    private func addItem() {
-        guard !newItem.isEmpty else { return }
-        inventoryItems.append(newItem)
-        newItem = ""
-    }
-
-    private func removeItem(_ item: String) {
-        inventoryItems.removeAll { $0 == item }
+        .task {
+            await recipeVM.fetchInventory()
+        }
     }
 }
 
-#Preview {
-    InventoryView()
-}

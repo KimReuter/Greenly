@@ -11,6 +11,8 @@ struct NavigationView: View {
     @Bindable var authVM: AuthenticationViewModel
     @Bindable var recipeVM: RecipeViewModel
     @State private var selectedTab = 0
+    @State private var isTabBarHidden = false
+    
     let tabIcons = ["house.fill", "book.fill", "person.crop.circle"]
     
     var body: some View {
@@ -21,12 +23,17 @@ struct NavigationView: View {
 
                 AllRecipes(recipeVM: recipeVM)
                     .tag(1)
+                
                 ProfileView(authVM: authVM, recipeVM: recipeVM)
                     .tag(2)
             }
             .ignoresSafeArea(.all, edges: .bottom)
-            FloatingTabBar(selectedTab: $selectedTab, tabs: tabIcons)
-                .padding(.bottom, 20)
+
+            // ⬇️ FloatingTabBar nur anzeigen, wenn isTabBarHidden false ist
+            if !isTabBarHidden {
+                FloatingTabBar(selectedTab: $selectedTab, tabs: tabIcons)
+                    .padding(.bottom, 20)
+            }
         }
         .tint(Color("tertiaryColor"))
         .globalBackground()
@@ -72,7 +79,4 @@ struct FloatingTabBar: View {
     }
 }
 
-#Preview {
-    NavigationView(authVM: AuthenticationViewModel(), recipeVM: RecipeViewModel())
-}
 

@@ -5,26 +5,68 @@
 //  Created by Kim Reuter on 24.02.25.
 //
 
+//
+//  RecipeDetailView.swift
+//  Greenly
+//
+//  Created by Kim Reuter on 24.02.25.
+//
+
+import SwiftUI
+
 import SwiftUI
 
 struct RecipeDetailView: View {
     
-    let recipe: Recipe
+    @State var recipe: Recipe
     @Bindable var recipeVM: RecipeViewModel
-    @State private var selectedTab: Int = 0
+    @State private var showAlert: Bool = false
+    @State private var imageOpacity: Double = 1  // Für den Fade-Effekt
     
     var body: some View {
         VStack {
             ZStack(alignment: .bottom) {
-                GeometryReader { geometry in
-                    Image("")
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: geometry.size.width, height: geometry.size.height * 0.4)
-                        .clipped()
+                // 🔥 Bild direkt laden, ohne GeometryReader!
+                if let imageUrl = recipe.imageUrl, let url = URL(string: imageUrl) {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .empty:
+                            ProgressView()
+                                .frame(height: UIScreen.main.bounds.height * 0.5)
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height * 0.5)
+                                .clipped()
+                                .opacity(imageOpacity)
+                        case .failure:
+                            Color.gray.opacity(0.3)
+                                .frame(height: UIScreen.main.bounds.height * 0.5)
+                                .overlay {
+                                    Image(systemName: "photo")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 50, height: 50)
+                                        .foregroundColor(.gray)
+                                }
+                        @unknown default:
+                            EmptyView()
+                        }
+                    }
+                } else {
+                    Color.gray.opacity(0.3)
+                        .frame(height: UIScreen.main.bounds.height * 0.5)
+                        .overlay {
+                            Image(systemName: "photo")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 50, height: 50)
+                                .foregroundColor(.gray)
+                        }
                 }
-                .frame(height: 300)
-                
+
+                // 🔥 Rezeptname + Buttons über Bild
                 VStack {
                     HStack {
                         Text(recipe.name)
@@ -40,12 +82,14 @@ struct RecipeDetailView: View {
                                     .foregroundColor(.white)
                             }
                         
-                            Button(action: {
+                            Button {
                                 Task {
                                     await recipeVM.checkAndUpdateShoppingList(for: recipe)
+                                    showAlert = true
                                 }
-                            }) {
-                                Label("Zum Warenkorb", systemImage: "cart.badge.plus")
+                            } label: {
+                                Image(systemName: "cart.badge.plus")
+                                    .foregroundColor(.white)
                             }
                         }
                     }
@@ -53,53 +97,35 @@ struct RecipeDetailView: View {
                     .background(Color.black.opacity(0.4))
                 }
             }
+            .frame(height: UIScreen.main.bounds.height * 0.5) // Bild ist 50% der Screenhöhe
             
-            HStack {
-                Button(action: { selectedTab = 0 }) {
-                    Text("Zutaten")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(selectedTab == 0 ? Color.white : Color.clear)
-                        .cornerRadius(8)
-                }
-                .foregroundColor(.black)
-                
-                Divider()
-                
-                Button(action: { selectedTab = 1 }) {
-                    Text("Wirkstoffe")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(selectedTab == 1 ? Color.white : Color.clear)
-                        .cornerRadius(8)
-                }
-                .foregroundColor(.black)
-            }
-            .font(.headline)
-            .padding(.horizontal)
-            
+            // 🔥 Rezeptbeschreibung
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
-                    if selectedTab == 0 {
-                        if recipeVM.ingredients.isEmpty {
-                            Text("Keine Zutaten vorhanden")
-                                .foregroundColor(.gray)
-                        } else {
-                            ForEach(recipeVM.ingredients, id: \.id) { ingredient in
-                                HStack {
-                                    Text("• \(ingredient.name)")
-                                        .font(.body)
-                                    if let quantity = ingredient.quantity {
-                                        Text("(\(quantity, specifier: "%.2f"))") // 🔥 Menge anzeigen
-                                            .font(.subheadline)
-                                            .foregroundColor(.gray)
-                                    }
+                    Text(recipe.description ?? "")
+                        .font(.body)
+                        .italic()
+                        .padding(.horizontal)
+                    
+                    Text("🛒 Zutaten")
+                        .font(.headline)
+                        .padding(.top)
+                    
+                    if (recipe.ingredients ?? []).isEmpty {
+                        Text("Keine Zutaten vorhanden")
+                            .foregroundColor(.gray)
+                    } else {
+                        ForEach(recipe.ingredients ?? [], id: \.id) { ingredient in
+                            HStack {
+                                Text("• \(ingredient.name)")
+                                    .font(.body)
+                                if let quantity = ingredient.quantity {
+                                    Text("(\(quantity, specifier: "%.2f"))")
+                                        .font(.subheadline)
+                                        .foregroundColor(.gray)
                                 }
                             }
                         }
-                    } else {
-                        Text("Hier könnten die Wirkstoffe stehen...") // 🔹 Falls du Wirkstoffe hinzufügst
-                            .font(.body)
                     }
                 }
                 .padding()
@@ -107,18 +133,27 @@ struct RecipeDetailView: View {
             .toolbar(.hidden, for: .tabBar)
             
             CreateButton(label: "Jetzt zubereiten") {
-                prepareRecipe()
+                Task {
+                    await recipeVM.consumeIngredientsForRecipe(recipe)
+                }
             }
-            .padding()
+            .padding(.bottom)
         }
-        .globalBackground()
+        .toolbar(.hidden, for: .tabBar)
+        .background(Color("background"))
         .edgesIgnoringSafeArea(.top)
         .task {
-            print("🛠 Lade Zutaten für Rezept: \(recipe.name)")
-            await recipeVM.fetchIngredients(for: recipe) // ✅ `$` hinzufügen
-            print("✅ Zutaten nach Laden: \($recipeVM.ingredients.count)")
+            await recipeVM.fetchIngredients(for: recipe)
+
+            if let updatedRecipe = recipeVM.recipes.first(where: { $0.id == recipe.id }) {
+                recipe.ingredients = updatedRecipe.ingredients
+            }
         }
-        
+        .alert("Hinzugefügt!", isPresented: $showAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Die Zutaten wurden zur Einkaufsliste hinzugefügt.")
+        }
     }
     
     // Funktionen
@@ -131,13 +166,4 @@ struct RecipeDetailView: View {
     }
 }
 
-#Preview {
-    RecipeDetailView(
-        recipe: Recipe(
-            name: "Heilerde Maske",
-            description: "Eine reinigende Maske für fettige, unreine Haut",
-            category: [.facialCare, .bodyCare]
-        ),
-        recipeVM: RecipeViewModel()
-    )
-}
+

@@ -44,7 +44,9 @@ struct AllRecipes: View {
                 ScrollView {
                     LazyVGrid(columns: columns, spacing: 16) {
                         ForEach(recipeVM.filteredRecipes) { recipe in
-                            NavigationLink(destination: RecipeDetailView(recipe: recipe, recipeVM: recipeVM)) {
+                            NavigationLink(destination: RecipeDetailView(recipe: recipe, recipeVM: recipeVM)
+                                
+                            ) {
                                 RecipeCardView(recipe: recipe)
                             }
                         }
@@ -75,17 +77,13 @@ struct AllRecipes: View {
                         .presentationDetents([.medium, .large])
                 }
                 .sheet(isPresented: $showCreateRecipeSheet) {
-                    CreateRecipeView(recipeVM: RecipeViewModel())
+                    CreateRecipeView(recipeVM: RecipeViewModel(imageRepository: ImgurImageRepository(clientID: "6261d10abfac0c8")))
                         .presentationDetents([.medium, .large])
                 }
             }
             .background(Color("background"))
         }
     }
-}
-
-#Preview {
-    AllRecipes(recipeVM: RecipeViewModel())
 }
 
 

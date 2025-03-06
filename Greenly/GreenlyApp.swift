@@ -27,7 +27,7 @@ struct GreenlyApp: App {
     init() {
         FirebaseApp.configure()
         authVM = AuthenticationViewModel()
-        recipeVM = RecipeViewModel()
+        recipeVM = RecipeViewModel(imageRepository: ImgurImageRepository(clientID: "6261d10abfac0c8"))
     }
     
 }

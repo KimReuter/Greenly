@@ -13,12 +13,34 @@ struct RecipeCardView: View {
         VStack(alignment: .leading, spacing: 6) {
             // 🔹 Bild oben (oder Platzhalter)
             ZStack {
-                if let imageName = recipe.imageName, !imageName.isEmpty {
-                    Image(imageName)
-                        .resizable()
-                        .scaledToFill()
+                if let imageUrl = recipe.imageUrl, let url = URL(string: imageUrl) {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .empty:
+                            ProgressView()
+                                .frame(width: 150, height: 100)
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .scaledToFill()
+                                .frame(height: 100)
+                                .cornerRadius(8)
+                                .clipped()
+                        case .failure:
+                            Color.gray.opacity(0.3)
+                                .overlay {
+                                    Image(systemName: "photo")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 40, height: 40)
+                                        .foregroundStyle(.gray)
+                                }
+                        @unknown default:
+                            EmptyView()
+                        }
+                    }
                 } else {
-                    // Platzhalter
+                    // Falls kein Bild vorhanden ist, zeige Platzhalter
                     Color.gray.opacity(0.3)
                         .overlay {
                             Image(systemName: "photo")
@@ -29,16 +51,14 @@ struct RecipeCardView: View {
                         }
                 }
             }
-            .frame(height: 100)       // Höhe für das Bild
-            .cornerRadius(8)
-            .clipped()
+            .frame(height: 100) // Höhe für das Bild
             
             // 🔹 Rezeptname (mehrzeilig)
             Text(recipe.name)
                 .font(.headline)
                 .foregroundStyle(.primary)
-                .lineLimit(2)              // max. 2 Zeilen
-                .minimumScaleFactor(0.8)   // verkleinert Schrift bei langem Text
+                .lineLimit(2)
+                .minimumScaleFactor(0.8)
             
             // 🔹 Kategorie als kleiner Chip (optional)
             if !recipe.category.isEmpty {
@@ -55,12 +75,17 @@ struct RecipeCardView: View {
             }
         }
         .padding()
-        .frame(width: 160, height: 200) // Einheitliche Kartengröße
+        .frame(width: 160, height: 200)
         .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
         .shadow(radius: 2)
     }
 }
 
 #Preview {
-    RecipeCardView(recipe: Recipe(name: "Test Rezept", description: "Lecker und nachhaltig", category: [.bodyCare]))
+    RecipeCardView(recipe: Recipe(
+        name: "Test Rezept",
+        description: "Lecker und nachhaltig",
+        category: [.bodyCare],
+        imageUrl: "https://via.placeholder.com/150" // Beispielbild
+    ))
 }

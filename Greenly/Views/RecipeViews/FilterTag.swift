@@ -36,6 +36,3 @@ struct FilterTag: View {
     }
 }
 
-#Preview {
-    FilterTag(text: "", filterType: .category, recipeVM: RecipeViewModel())
-}

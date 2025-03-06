@@ -73,17 +73,17 @@ struct ProfileView: View {
             .navigationTitle("👤 Persönlich")
         }
         .sheet(isPresented: $showCollectionSheet) {
-            CollectionsView() // 🔥 Hier wird später die Sammlungs-View eingebunden
+            CollectionsView()
+                .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showShoppingListSheet) {
-            ShoppingListView() // 🔥 Hier wird später die Einkaufsliste-View eingebunden
+            ShoppingListView(recipeVM: recipeVM)
+                .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showInventorySheet) {
-            InventoryView() // 🔥 Hier wird später die Vorrat-View eingebunden
+            InventoryView(recipeVM: recipeVM)
+                .presentationDetents([.medium, .large])
         }
     }
 }
 
-#Preview {
-    ProfileView(authVM: AuthenticationViewModel(), recipeVM: RecipeViewModel())
-}
