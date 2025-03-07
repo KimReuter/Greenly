@@ -10,7 +10,7 @@ import FirebaseFirestore
 final class UserRepository {
     
     func insert(id: String, email: String, name: String, createdOn: Date) async throws(Error) -> User {
-        let user = User(id: id, name: name, email: email, signedUpOn: createdOn, favoriteRecipeIDs: [])
+        let user = User(id: id, name: name, email: email, signedUpOn: createdOn)
         do {
             try database.collection("users").document(id).setData(from: user)
         } catch {

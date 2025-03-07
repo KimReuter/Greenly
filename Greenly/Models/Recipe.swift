@@ -16,6 +16,7 @@ struct Recipe: Codable, Identifiable {
     var category: [RecipeCategory]
     var ingredients: [Ingredient]?
     var imageUrl: String?
+    var authorID: String?
     //    var author: String
     //    var preparationTime: Int
     //    var difficulty: Difficulty

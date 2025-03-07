@@ -80,12 +80,3 @@ struct RecipeCardView: View {
         .shadow(radius: 2)
     }
 }
-
-#Preview {
-    RecipeCardView(recipe: Recipe(
-        name: "Test Rezept",
-        description: "Lecker und nachhaltig",
-        category: [.bodyCare],
-        imageUrl: "https://via.placeholder.com/150" // Beispielbild
-    ))
-}

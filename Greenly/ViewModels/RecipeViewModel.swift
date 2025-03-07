@@ -46,6 +46,10 @@ final class RecipeViewModel {
         return nil
     }
     
+    var currentUserID: String? {
+        return Auth.auth().currentUser?.uid
+    }
+    
     // MARK: - 📡 Snapshot Listener für Rezepte
     func observeRecipes() {
         do {
@@ -156,6 +160,59 @@ final class RecipeViewModel {
     // MARK: - 📤 Rezept erstellen
     func createRecipe(_ recipe: Recipe) async throws {
         try await recipeManager.createRecipe(recipe)
+    }
+    
+    
+    // MARK: - ❌ Rezept löschen
+    func deleteRecipe(_ recipe: Recipe) async {
+        guard let recipeID = recipe.id else {
+            print("❌ Fehler: Rezept hat keine ID!")
+            return
+        }
+        
+        do {
+            try await recipeManager.deleteRecipe(recipeID)
+            
+            // 🔄 Live-Update: Rezept aus Liste entfernen
+            if let index = recipes.firstIndex(where: { $0.id == recipeID }) {
+                recipes.remove(at: index)
+            }
+            
+            print("✅ Rezept gelöscht: \(recipe.name)")
+        } catch {
+            errorMessage = "❌ Fehler beim Löschen des Rezepts: \(error.localizedDescription)"
+            print(errorMessage!)
+        }
+    }
+    
+    // MARK: - ✏️ Rezept aktualisieren
+    func updateRecipe(_ updatedRecipe: Recipe, newImageData: Data?) async {
+        do {
+            var recipeToUpdate = updatedRecipe
+
+            // 📤 Falls ein neues Bild vorhanden ist, hochladen und URL speichern
+            if let newImageData {
+                let uploadedURL = try await uploadImage(data: newImageData)
+                recipeToUpdate.imageUrl = uploadedURL
+            }
+
+            // 🔥 Aktualisierte Daten in Firestore speichern
+            try await recipeManager.updateRecipe(recipeToUpdate)
+
+            // 🔄 Live-Update: Rezept in der Liste ersetzen
+            if let index = recipes.firstIndex(where: { $0.id == recipeToUpdate.id }) {
+                recipes[index] = recipeToUpdate
+            }
+
+            print("✅ Rezept erfolgreich aktualisiert: \(recipeToUpdate.name)")
+
+            // 🧹 Reset nach erfolgreicher Aktualisierung
+            selectedImageData = nil
+
+        } catch {
+            errorMessage = "❌ Fehler beim Aktualisieren: \(error.localizedDescription)"
+            print(errorMessage!)
+        }
     }
     
     // MARK: - 📥 Einkaufsliste abrufen
@@ -352,21 +409,16 @@ final class RecipeViewModel {
         }
     }
     
-    func uploadImage() async {
-        guard let selectedImageData else {
-            errorMessage = "❌ Kein Bild ausgewählt"
-            print("❌ Kein Bild vorhanden zum Hochladen")
-            return
-        }
-
-        print("🚀 Starte Upload zu Imgur...") // Debugging-Print
+    func uploadImage(data: Data) async throws -> String {
+        print("🚀 Starte Upload zu Imgur...")
 
         do {
-            uploadedImageRef = try await imageRepository.uploadImage(data: selectedImageData)
-            print("✅ Bild erfolgreich hochgeladen: \(uploadedImageRef?.url ?? "Keine URL erhalten")")
+            let uploadedImageRef = try await imageRepository.uploadImage(data: data)
+            print("✅ Bild erfolgreich hochgeladen: \(uploadedImageRef.url)")
+            return uploadedImageRef.url
         } catch {
-            errorMessage = error.localizedDescription
             print("❌ Fehler beim Hochladen des Bildes: \(error.localizedDescription)")
+            throw error
         }
     }
     

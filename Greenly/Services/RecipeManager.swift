@@ -105,6 +105,29 @@ final class RecipeManager {
         print("✅ Rezept erfolgreich gespeichert: \(recipe.name)")
     }
     
+    // MARK: - ❌ Rezept aus Firestore löschen
+    func deleteRecipe(_ recipeID: String) async throws {
+        let recipeRef = db.collection("recipes").document(recipeID)
+
+        // 🔥 Rezept löschen
+        try await recipeRef.delete()
+
+        print("✅ Firestore: Rezept erfolgreich gelöscht (ID: \(recipeID))")
+    }
+    
+    // MARK: - Update Recipe
+    
+    func updateRecipe(_ recipe: Recipe) async throws {
+        guard let recipeID = recipe.id else { throw RecipeError.noRecipeID }
+        
+        let recipeRef = db.collection("recipes").document(recipeID)
+        
+        var recipeData = try Firestore.Encoder().encode(recipe)
+        
+        try await recipeRef.updateData(recipeData)
+        print("✅ Firestore: Rezept \(recipe.name) erfolgreich aktualisiert")
+    }
+    
     // MARK: - 🛒 Einkaufsliste verwalten
     func addIngredientToShoppingList(_ ingredient: Ingredient) async throws {
         guard let userID = Auth.auth().currentUser?.uid else { throw RecipeError.noUserLoggedIn }
@@ -220,6 +243,7 @@ final class RecipeManager {
     enum RecipeError: LocalizedError {
         case noUserLoggedIn
         case decodingFailed(reason: String)
+        case noRecipeID
         
         var errorDescription: String? {
             switch self {
@@ -227,6 +251,8 @@ final class RecipeManager {
                 return "Kein Benutzer eingeloggt."
             case .decodingFailed(let reason):
                 return "Fehler beim Dekodieren: \(reason)"
+            case .noRecipeID:
+                return "Kein Rezept-ID angegeben."
             }
         }
     }

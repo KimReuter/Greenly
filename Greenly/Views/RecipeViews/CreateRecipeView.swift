@@ -41,9 +41,14 @@ struct CreateRecipeView: View {
                         }
                     
                     if recipeVM.selectedImage != nil {
-                        Button("📤 Hochladen") {
+                        Button("🌐 Hochladen") {
                             Task {
-                                await recipeVM.uploadImage()
+                                do {
+                                    let imageUrl = try await recipeVM.uploadImage(data: recipeVM.selectedImageData!)
+                                    print("✅ Bild hochgeladen: \(imageUrl)")
+                                } catch {
+                                    print("❌ Fehler beim Hochladen des Bildes: \(error.localizedDescription)")
+                                }
                             }
                         }
                     }
@@ -154,33 +159,33 @@ struct CreateRecipeView: View {
     func saveRecipe() async {
         do {
             print("🚀 Starte Upload-Prozess...")
-            await recipeVM.uploadImage()
 
-            // Warte kurz, damit sich `uploadedImageRef` setzen kann
-            try await Task.sleep(nanoseconds: 500_000_000) // 0.5 Sekunden warten
+            var imageUrl: String? = nil
             
-            guard let imageUrl = recipeVM.uploadedImageRef?.url else {
-                print("⚠️ Kein Bild hochgeladen, Rezept wird ohne Bild gespeichert.")
-                return
+            // Falls ein neues Bild existiert, lade es hoch
+            if let imageData = recipeVM.selectedImageData {
+                imageUrl = try await recipeVM.uploadImage(data: imageData)
+                print("✅ Bild hochgeladen: \(imageUrl ?? "Keine URL")")
             }
 
-            print("✅ Speichere Bild-URL in Firestore: \(imageUrl)")
-
+            // Erstelle das Rezept-Objekt
             let newRecipe = Recipe(
                 name: recipeName,
                 description: recipeDescription,
                 category: Array(selectedCategories),
                 ingredients: ingredients.map { Ingredient(name: $0.name, quantity: $0.quantity) },
-                imageUrl: imageUrl
+                imageUrl: imageUrl,
+                authorID: recipeVM.currentUserID ?? "unkwnown"
             )
 
+            // Speichere das Rezept in Firestore
             try await recipeVM.createRecipe(newRecipe)
             print("✅ Rezept erfolgreich gespeichert mit Bild-URL: \(newRecipe.imageUrl ?? "Keine URL")")
 
             showSuccessAlert = true
         } catch {
-            errorMessage = "Fehler beim Speichern: \(error.localizedDescription)"
-            print("❌ Fehler beim Speichern des Rezepts: \(error.localizedDescription)")
+            errorMessage = "❌ Fehler beim Speichern: \(error.localizedDescription)"
+            print(errorMessage!)
         }
     }
 }

@@ -14,90 +14,25 @@
 
 import SwiftUI
 
-import SwiftUI
-
 struct RecipeDetailView: View {
     
+    @Environment(\.dismiss) var dismiss
     @State var recipe: Recipe
     @Bindable var recipeVM: RecipeViewModel
     @State private var showAlert: Bool = false
-    @State private var imageOpacity: Double = 1  // Für den Fade-Effekt
+    @State private var showEditView = false
+    @State private var showSaveAlert = false
+    @State private var showDeleteAlert = false
     
     var body: some View {
         VStack {
             ZStack(alignment: .bottom) {
-                // 🔥 Bild direkt laden, ohne GeometryReader!
-                if let imageUrl = recipe.imageUrl, let url = URL(string: imageUrl) {
-                    AsyncImage(url: url) { phase in
-                        switch phase {
-                        case .empty:
-                            ProgressView()
-                                .frame(height: UIScreen.main.bounds.height * 0.5)
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height * 0.5)
-                                .clipped()
-                                .opacity(imageOpacity)
-                        case .failure:
-                            Color.gray.opacity(0.3)
-                                .frame(height: UIScreen.main.bounds.height * 0.5)
-                                .overlay {
-                                    Image(systemName: "photo")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 50, height: 50)
-                                        .foregroundColor(.gray)
-                                }
-                        @unknown default:
-                            EmptyView()
-                        }
-                    }
-                } else {
-                    Color.gray.opacity(0.3)
-                        .frame(height: UIScreen.main.bounds.height * 0.5)
-                        .overlay {
-                            Image(systemName: "photo")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 50, height: 50)
-                                .foregroundColor(.gray)
-                        }
-                }
-
-                // 🔥 Rezeptname + Buttons über Bild
-                VStack {
-                    HStack {
-                        Text(recipe.name)
-                            .font(.title2)
-                            .bold()
-                            .foregroundColor(.white)
-                        
-                        Spacer()
-                        
-                        HStack(spacing: 15) {
-                            Button(action: { shareRecipe() }) {
-                                Image(systemName: "square.and.arrow.up")
-                                    .foregroundColor(.white)
-                            }
-                        
-                            Button {
-                                Task {
-                                    await recipeVM.checkAndUpdateShoppingList(for: recipe)
-                                    showAlert = true
-                                }
-                            } label: {
-                                Image(systemName: "cart.badge.plus")
-                                    .foregroundColor(.white)
-                            }
-                        }
-                    }
-                    .padding()
-                    .background(Color.black.opacity(0.4))
-                }
+                
+                RecipeImageView(imageUrl: recipe.imageUrl)
+                
+                RecipeHeaderView(recipe: recipe, recipeVM: recipeVM, showEditView: $showEditView, showAlert: $showAlert, showDeleteAlert: $showDeleteAlert)
             }
-            .frame(height: UIScreen.main.bounds.height * 0.5) // Bild ist 50% der Screenhöhe
+            .frame(height: UIScreen.main.bounds.height * 0.5)
             
             // 🔥 Rezeptbeschreibung
             ScrollView {
@@ -130,7 +65,6 @@ struct RecipeDetailView: View {
                 }
                 .padding()
             }
-            .toolbar(.hidden, for: .tabBar)
             
             CreateButton(label: "Jetzt zubereiten") {
                 Task {
@@ -139,12 +73,11 @@ struct RecipeDetailView: View {
             }
             .padding(.bottom)
         }
-        .toolbar(.hidden, for: .tabBar)
         .background(Color("background"))
         .edgesIgnoringSafeArea(.top)
         .task {
             await recipeVM.fetchIngredients(for: recipe)
-
+            
             if let updatedRecipe = recipeVM.recipes.first(where: { $0.id == recipe.id }) {
                 recipe.ingredients = updatedRecipe.ingredients
             }
@@ -154,12 +87,35 @@ struct RecipeDetailView: View {
         } message: {
             Text("Die Zutaten wurden zur Einkaufsliste hinzugefügt.")
         }
+        .sheet(isPresented: $showEditView, onDismiss: {
+            if let updatedRecipe = recipeVM.recipes.first(where: { $0.id == recipe.id }) {
+                recipe = updatedRecipe
+                showSaveAlert = true // ✅ Alert anzeigen
+            }
+        }) {
+            EditRecipeView(recipe: recipe, recipeVM: recipeVM)
+        }
+        .alert("✅ Gespeichert!", isPresented: $showSaveAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Dein Rezept wurde erfolgreich gespeichert.")
+        }
+        .alert("Rezept löschen?", isPresented: $showDeleteAlert) {
+            Button("Abbrechen", role: .cancel) {}
+            Button("Löschen", role: .destructive) {
+                Task {
+                    await recipeVM.deleteRecipe(recipe)
+                    dismiss() // 🔄 Detail-Ansicht schließen
+                }
+            }
+        } message: {
+            Text("Möchtest du dieses Rezept wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.")
+        }
     }
+
     
     // Funktionen
-    func shareRecipe() {
-        print("📤 Rezept teilen")
-    }
+    
     
     func prepareRecipe() {
         print("🍽 Rezept starten")
