@@ -14,5 +14,5 @@ struct User: Codable, Identifiable {
     var name: String
     var email: String
     var signedUpOn: Date
-//    var profileImageUrl: String?
+    var profileImageUrl: String?
 }

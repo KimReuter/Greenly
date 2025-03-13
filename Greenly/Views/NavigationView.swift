@@ -8,24 +8,26 @@
 import SwiftUI
 
 struct NavigationView: View {
+    
     @Bindable var authVM: AuthenticationViewModel
     @Bindable var recipeVM: RecipeViewModel
+    @Bindable var userVM: UserViewModel
+    @Bindable var collectionVM: CollectionViewModel
+    
     @State private var selectedTab = 0
     @State private var isTabBarHidden = false
     
-    let tabIcons = ["house.fill", "book.fill", "person.crop.circle"]
+    let tabIcons = ["book.fill", "person.crop.circle"]
     
     var body: some View {
         ZStack(alignment: .bottom) {
             TabView(selection: $selectedTab) {
-                HomeView()
-                    .tag(0)
-
-                AllRecipes(recipeVM: recipeVM)
-                    .tag(1)
                 
-                ProfileView(authVM: authVM, recipeVM: recipeVM)
-                    .tag(2)
+                AllRecipes(recipeVM: recipeVM, collectionVM: collectionVM)
+                    .tag(0)
+                
+                ProfileView(authVM: authVM, recipeVM: recipeVM, userVM: userVM, collectionVM: collectionVM)
+                    .tag(1)
             }
             .ignoresSafeArea(.all, edges: .bottom)
 

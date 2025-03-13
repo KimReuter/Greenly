@@ -6,13 +6,18 @@
 //
 
 import SwiftUI
+import PhotosUI
 
 struct ProfileView: View {
+    
     @State private var showCollectionSheet = false
     @State private var showInventorySheet = false
     @State private var showShoppingListSheet = false
+    
     @Bindable var authVM: AuthenticationViewModel
     @Bindable var recipeVM: RecipeViewModel
+    @Bindable var userVM: UserViewModel
+    @Bindable var collectionVM: CollectionViewModel
     
     var body: some View {
         NavigationStack {
@@ -30,10 +35,7 @@ struct ProfileView: View {
                                 .foregroundStyle(.gray)
                         }
                         Spacer()
-                        Image(systemName: "person.crop.circle.fill")
-                            .resizable()
-                            .frame(width: 60, height: 60)
-                            .foregroundStyle(.gray)
+                        ProfilePictureView(userVM: userVM)
                     }
                     .padding(.horizontal)
 
@@ -73,7 +75,7 @@ struct ProfileView: View {
             .navigationTitle("👤 Persönlich")
         }
         .sheet(isPresented: $showCollectionSheet) {
-            CollectionsView()
+            CollectionsView(collectionVM: collectionVM, recipeVM: recipeVM)
                 .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showShoppingListSheet) {

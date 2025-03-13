@@ -59,6 +59,38 @@ final class RecipeManager {
         return recipes
     }
     
+    // MARK: - Rezepte für Sammlung laden
+    
+    func fetchRecipesForCollection(recipeIDs: [String]) async throws -> [Recipe] {
+        guard !recipeIDs.isEmpty else { return [] } // 🔍 Falls keine Rezepte, nichts abrufen
+
+        let snapshot = try await db.collection("recipes")
+            .whereField(FieldPath.documentID(), in: recipeIDs) // 🔥 Alle Rezepte in einem Query abrufen!
+            .getDocuments()
+
+        return snapshot.documents.compactMap { try? $0.data(as: Recipe.self) }
+    }
+    
+    func fetchRecipesByIDs(_ recipeIDs: [String]) async throws -> [Recipe] {
+        guard !recipeIDs.isEmpty else { return [] }
+        
+        var recipes: [Recipe] = []
+        
+        for id in recipeIDs {
+            let docRef = db.collection("recipes").document(id)
+            
+            let document = try await docRef.getDocument()
+            if let recipe = try? document.data(as: Recipe.self) {
+                recipes.append(recipe)
+            } else {
+                print("⚠️ Konnte Rezept nicht dekodieren: \(id)")
+            }
+        }
+        
+        print("🔥 Firestore: \(recipes.count) Rezepte erfolgreich geladen")
+        return recipes
+    }
+    
     // MARK: - 📥 Zutaten abrufen
     func fetchIngredients(forRecipeID recipeID: String) async throws -> [Ingredient] {
         let ingredientsRef = db.collection("recipes").document(recipeID).collection("ingredients")

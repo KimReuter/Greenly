@@ -18,7 +18,10 @@ struct RecipeDetailView: View {
     
     @Environment(\.dismiss) var dismiss
     @State var recipe: Recipe
+    
     @Bindable var recipeVM: RecipeViewModel
+    @Bindable var collectionVM: CollectionViewModel
+    
     @State private var showAlert: Bool = false
     @State private var showEditView = false
     @State private var showSaveAlert = false
@@ -30,7 +33,7 @@ struct RecipeDetailView: View {
                 
                 RecipeImageView(imageUrl: recipe.imageUrl)
                 
-                RecipeHeaderView(recipe: recipe, recipeVM: recipeVM, showEditView: $showEditView, showAlert: $showAlert, showDeleteAlert: $showDeleteAlert)
+                RecipeHeaderView(recipe: recipe, recipeVM: recipeVM, collectionVM: collectionVM, showEditView: $showEditView, showAlert: $showAlert, showDeleteAlert: $showDeleteAlert)
             }
             .frame(height: UIScreen.main.bounds.height * 0.5)
             

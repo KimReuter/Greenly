@@ -8,11 +8,18 @@
 import SwiftUI
 
 struct RecipeHeaderView: View {
+    
     let recipe: Recipe
+    
     @Bindable var recipeVM: RecipeViewModel
+    @Bindable var collectionVM: CollectionViewModel
+    
     @Binding var showEditView: Bool
     @Binding var showAlert: Bool
     @Binding var showDeleteAlert: Bool
+    
+    @State private var showCollectionSelection = false
+    @State private var showSuccessAlert = false
     
     var body: some View {
         VStack {
@@ -34,7 +41,7 @@ struct RecipeHeaderView: View {
                             Image(systemName: "pencil")
                                 .foregroundColor(.blue)
                         }
-
+                        
                         // 🗑 Löschen-Button
                         Button(action: {
                             showDeleteAlert = true
@@ -44,11 +51,15 @@ struct RecipeHeaderView: View {
                         }
                     }
                     
-                    Button(action: { shareRecipe() }) {
-                        Image(systemName: "square.and.arrow.up")
+                    // ➕ Button zum Hinzufügen zu einer Sammlung
+                    Button {
+                        showCollectionSelection = true
+                    } label: {
+                        Image(systemName: "text.badge.plus")
                             .foregroundColor(.white)
                     }
                     
+                    // 🛒 Einkaufsliste
                     Button {
                         Task {
                             await recipeVM.checkAndUpdateShoppingList(for: recipe)
@@ -63,9 +74,15 @@ struct RecipeHeaderView: View {
             .padding()
             .background(Color.black.opacity(0.4))
         }
+        .sheet(isPresented: $showCollectionSelection) {
+            CollectionSelectionView(recipe: recipe, collectionVM: collectionVM, showSuccessAlert: $showSuccessAlert)
+        }
+        .presentationDetents([.medium, .large])
+        .alert("✅ Rezept hinzugefügt!", isPresented: $showSuccessAlert) {
+                    Button("OK", role: .cancel) {}
+                } message: {
+                    Text("Das Rezept wurde erfolgreich zur Sammlung hinzugefügt.")
+                }
     }
     
-    func shareRecipe() {
-        print("📤 Rezept teilen")
-    }
 }

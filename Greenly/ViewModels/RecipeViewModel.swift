@@ -50,6 +50,8 @@ final class RecipeViewModel {
         return Auth.auth().currentUser?.uid
     }
     
+    private var ingredientsCache: [String: [Ingredient]] = [:] // 🔥 Cache für Zutaten
+    
     // MARK: - 📡 Snapshot Listener für Rezepte
     func observeRecipes() {
         do {
@@ -128,35 +130,32 @@ final class RecipeViewModel {
     // MARK: - 📥 Zutaten für ein Rezept abrufen
     func fetchIngredients(for recipe: Recipe) async {
         guard let recipeID = recipe.id else { return }
-        
-        print("📥 Lade Zutaten für Rezept ID: \(recipeID)")
-        
+
+        // 🛑 Falls Zutaten schon im Cache sind, nicht erneut abrufen!
+        if let cachedIngredients = ingredientsCache[recipeID] {
+            print("🔹 Zutaten aus Cache geladen: \(cachedIngredients.count)")
+            if let index = recipes.firstIndex(where: { $0.id == recipeID }) {
+                recipes[index].ingredients = cachedIngredients
+            }
+            return
+        }
+
+        print("📥 Lade Zutaten für Rezept ID: \(recipeID) aus Firestore")
+
         do {
             let loadedIngredients = try await recipeManager.fetchIngredients(forRecipeID: recipeID)
-            print("✅ Firestore hat Zutaten zurückgegeben: \(loadedIngredients.count)")
-            
+            ingredientsCache[recipeID] = loadedIngredients // ✅ Zutaten in Cache speichern
+
             if let index = recipes.firstIndex(where: { $0.id == recipeID }) {
                 recipes[index].ingredients = loadedIngredients
-                print("✅ Zutaten für \(recipes[index].name) gespeichert: \(recipes[index].ingredients?.count ?? 0)")
             }
-            
-            // 🔥 Erzwingen, dass SwiftUI das ViewModel erkennt:
-            recipes = recipes.map { r in
-                if r.id == recipeID {
-                    var updatedRecipe = r
-                    updatedRecipe.ingredients = loadedIngredients
-                    return updatedRecipe
-                }
-                return r
-            }
-            
-            print("✅ Zutaten nach Laden: \(recipes.first(where: { $0.id == recipeID })?.ingredients?.count ?? 0)")
-            
+
         } catch {
             print("❌ Fehler beim Laden der Zutaten: \(error.localizedDescription)")
             errorMessage = error.localizedDescription
         }
     }
+    
     // MARK: - 📤 Rezept erstellen
     func createRecipe(_ recipe: Recipe) async throws {
         try await recipeManager.createRecipe(recipe)
