@@ -13,6 +13,7 @@ struct AddIngredientView: View {
     @State private var quantity: Double = 0
     @State private var showAlert = false
     @State private var alertMessage = ""
+    @State private var unit: MeasurementUnit = .gram  // 🔥 Standardwert auf "Gramm"
 
     var isValidInput: Bool {
         !newItem.trimmingCharacters(in: .whitespaces).isEmpty && quantity > 0
@@ -28,10 +29,19 @@ struct AddIngredientView: View {
                 .frame(width: 60)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
 
+            // 🔥 Kicker für Maßeinheit
+            Picker("", selection: $unit) {
+                ForEach(MeasurementUnit.allCases, id: \.self) { unit in
+                    Text(unit.name).tag(unit)
+                }
+            }
+            .pickerStyle(MenuPickerStyle()) // 🎨 Dropdown-Style für bessere Optik
+            .frame(width: 100)
+
             Button {
                 if isValidInput {
                     Task {
-                        let ingredient = Ingredient(name: newItem, quantity: quantity)
+                        let ingredient = Ingredient(name: newItem, quantity: quantity, unit: unit)
                         await recipeVM.addToShoppingList(ingredient, missingQuantity: quantity)
                         newItem = ""  // Zurücksetzen nach erfolgreichem Hinzufügen
                         quantity = 0

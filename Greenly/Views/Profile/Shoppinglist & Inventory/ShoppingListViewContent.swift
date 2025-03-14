@@ -32,7 +32,7 @@ struct ShoppingListViewContent: View {
                             Text(ingredient.name)
                                 .font(.headline)
                             if let quantity = ingredient.quantity {
-                                Text("\(quantity, specifier: "%.2f") benötigt")
+                                Text("\(quantity, specifier: "%.2f") \(ingredient.unit?.name ?? "Gramm")")
                                     .font(.subheadline)
                                     .foregroundColor(.gray)
                             }

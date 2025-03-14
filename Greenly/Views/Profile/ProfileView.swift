@@ -18,6 +18,7 @@ struct ProfileView: View {
     @Bindable var recipeVM: RecipeViewModel
     @Bindable var userVM: UserViewModel
     @Bindable var collectionVM: CollectionViewModel
+
     
     var body: some View {
         NavigationStack {

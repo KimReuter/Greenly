@@ -9,10 +9,12 @@
 import SwiftUI
 
 struct InventoryView: View {
+    
     @Bindable var recipeVM: RecipeViewModel
+    
     @State private var newItem = ""
     @State private var quantity: Double = 0
-
+    
     var body: some View {
         NavigationStack {
             VStack {

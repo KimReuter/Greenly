@@ -16,19 +16,19 @@ struct RecipeSelectionCard: View {
         ZStack(alignment: .topTrailing) {
             RecipeCardView(recipe: recipe) // Nutzt das gleiche Design wie die Sammlung
             
-            // ✅ Schöner platzierte Checkbox
-//            Circle()
-//                .fill(isSelected ? Color.green : Color.gray.opacity(0.5))
-//                .frame(width: 24, height: 24)
-//                .overlay(
-//                    Image(systemName: isSelected ? "checkmark" : "")
-//                        .foregroundColor(.white)
-//                        .font(.system(size: 14, weight: .bold))
-//                )
-//                .padding(8)
-//                .onTapGesture {
-//                    onTap()
-//                }
+             //✅ Schöner platzierte Checkbox
+            Circle()
+                .fill(isSelected ? Color.green : Color.gray.opacity(0.5))
+                .frame(width: 24, height: 24)
+                .overlay(
+                    Image(systemName: isSelected ? "checkmark" : "")
+                        .foregroundColor(.white)
+                        .font(.system(size: 14, weight: .bold))
+                )
+                .padding(8)
+                .onTapGesture {
+                    onTap()
+                }
         }
     }
 }

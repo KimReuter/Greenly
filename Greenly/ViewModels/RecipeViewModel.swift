@@ -25,6 +25,7 @@ final class RecipeViewModel {
     var searchQuery: String = "" // Suchtext (Name oder Beschreibung)
     var selectedCategory: Set<RecipeCategory> = [] // ✅ Set für Filter
     var selectedIngredient: String = "" // Gesuchte Zutat
+    var selectedUnit: MeasurementUnit = .gram
     
     private let recipeManager = RecipeManager()
     private let imageRepository: ImageRepository
@@ -131,35 +132,39 @@ final class RecipeViewModel {
     func fetchIngredients(for recipe: Recipe) async {
         guard let recipeID = recipe.id else { return }
 
-        // 🛑 Falls Zutaten schon im Cache sind, nicht erneut abrufen!
-        if let cachedIngredients = ingredientsCache[recipeID] {
-            print("🔹 Zutaten aus Cache geladen: \(cachedIngredients.count)")
-            if let index = recipes.firstIndex(where: { $0.id == recipeID }) {
-                recipes[index].ingredients = cachedIngredients
-            }
-            return
-        }
-
-        print("📥 Lade Zutaten für Rezept ID: \(recipeID) aus Firestore")
-
         do {
             let loadedIngredients = try await recipeManager.fetchIngredients(forRecipeID: recipeID)
-            ingredientsCache[recipeID] = loadedIngredients // ✅ Zutaten in Cache speichern
+
+            for ingredient in loadedIngredients {
+                print("🥄 Geladene Zutat: \(ingredient.name), Menge: \(ingredient.quantity ?? 0.0) \(ingredient.unit?.name ?? "Gramm")")
+            }
 
             if let index = recipes.firstIndex(where: { $0.id == recipeID }) {
                 recipes[index].ingredients = loadedIngredients
             }
-
         } catch {
             print("❌ Fehler beim Laden der Zutaten: \(error.localizedDescription)")
-            errorMessage = error.localizedDescription
         }
     }
     
     // MARK: - 📤 Rezept erstellen
     func createRecipe(_ recipe: Recipe) async throws {
-        try await recipeManager.createRecipe(recipe)
+        var updatedRecipe = recipe
+
+        // 🛠 Lokale Kopie des Arrays erstellen
+        var updatedIngredients = updatedRecipe.ingredients ?? []
+
+        for i in 0..<updatedIngredients.count {
+            updatedIngredients[i].unit = updatedIngredients[i].unit ?? .gram
+        }
+
+        // 🔄 Aktualisierte Zutaten in `updatedRecipe` speichern
+        updatedRecipe.ingredients = updatedIngredients
+
+        try await recipeManager.createRecipe(updatedRecipe)
+        print("✅ Rezept erstellt mit Zutaten: \(updatedRecipe.ingredients?.count ?? 0)")
     }
+    
     
     
     // MARK: - ❌ Rezept löschen
@@ -189,28 +194,20 @@ final class RecipeViewModel {
         do {
             var recipeToUpdate = updatedRecipe
 
-            // 📤 Falls ein neues Bild vorhanden ist, hochladen und URL speichern
-            if let newImageData {
-                let uploadedURL = try await uploadImage(data: newImageData)
-                recipeToUpdate.imageUrl = uploadedURL
+            // 🛠 Lokale Kopie der Zutaten erstellen
+            var updatedIngredients = recipeToUpdate.ingredients ?? []
+
+            for i in 0..<updatedIngredients.count {
+                updatedIngredients[i].unit = updatedIngredients[i].unit ?? .gram
             }
 
-            // 🔥 Aktualisierte Daten in Firestore speichern
+            // 🔄 Aktualisierte Zutaten in `recipeToUpdate` speichern
+            recipeToUpdate.ingredients = updatedIngredients
+
             try await recipeManager.updateRecipe(recipeToUpdate)
-
-            // 🔄 Live-Update: Rezept in der Liste ersetzen
-            if let index = recipes.firstIndex(where: { $0.id == recipeToUpdate.id }) {
-                recipes[index] = recipeToUpdate
-            }
-
             print("✅ Rezept erfolgreich aktualisiert: \(recipeToUpdate.name)")
-
-            // 🧹 Reset nach erfolgreicher Aktualisierung
-            selectedImageData = nil
-
         } catch {
-            errorMessage = "❌ Fehler beim Aktualisieren: \(error.localizedDescription)"
-            print(errorMessage!)
+            print("❌ Fehler beim Aktualisieren: \(error.localizedDescription)")
         }
     }
     
@@ -228,7 +225,9 @@ final class RecipeViewModel {
     func addToShoppingList(_ ingredient: Ingredient, missingQuantity: Double) async {
         do {
             var ingredientToAdd = ingredient
-            ingredientToAdd.quantity = missingQuantity // ✅ Setze nur die fehlende Menge
+            ingredientToAdd.quantity = missingQuantity
+            ingredientToAdd.unit = ingredient.unit // 🔥 `unit` beibehalten
+
             try await recipeManager.addIngredientToShoppingList(ingredientToAdd)
             await fetchShoppingList()
         } catch {
@@ -340,14 +339,21 @@ final class RecipeViewModel {
     
     func moveToInventory(_ ingredient: Ingredient) async {
         do {
-            // Falls die Zutat bereits im Inventory existiert → Menge addieren
-            let existingQuantity = inventory.first { $0.name.lowercased() == ingredient.name.lowercased() }?.quantity ?? 0.0
+            // 🔍 Falls die Zutat bereits im Inventar existiert → Menge und Einheit beibehalten
+            let existingIngredient = inventory.first { $0.name.lowercased() == ingredient.name.lowercased() }
+            let existingQuantity = existingIngredient?.quantity ?? 0.0
             let newQuantity = existingQuantity + (ingredient.quantity ?? 0.0)
-            
-            try await recipeManager.addIngredientToInventory(Ingredient(name: ingredient.name, quantity: newQuantity))
+
+            // 🔥 Einheit beibehalten oder Standard setzen
+            let unit = ingredient.unit
+
+            // 📥 Zutat ins Inventar hinzufügen
+            try await recipeManager.addIngredientToInventory(Ingredient(name: ingredient.name, quantity: newQuantity, unit: unit))
+
+            // 🗑 Zutat aus der Einkaufsliste entfernen
             try await recipeManager.removeIngredientFromShoppingList(ingredient.name)
-            
-            print("✅ \(ingredient.name) aus Einkaufsliste ins Inventory verschoben")
+
+            print("✅ \(ingredient.name) aus Einkaufsliste ins Inventar verschoben")
             await fetchInventory()
             await fetchShoppingList() // 🔄 Aktualisieren nach Bewegung
         } catch {

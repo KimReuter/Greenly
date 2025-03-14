@@ -7,23 +7,23 @@
 
 import Foundation
 
-enum MeasurementUnit: Codable, CaseIterable {
+enum MeasurementUnit: String, Codable, CaseIterable {
     
-    case gram
-    case milliliter
-    case teaspoon
-    case tablespoon
-    case drop
-    case piece
+    case gram = "gram"
+    case milliliter = "milliliter"
+    case teaspoon = "teaspoon"
+    case tablespoon = "tablespoon"
+    case drop = "drop"
+    case piece = "piece"
     
     var name: String {
         switch self {
-        case .gram: "Gramm"
-        case .milliliter: "Milliliter"
-        case .teaspoon: "Teelöffel"
-        case .tablespoon: "Esslöffel"
-        case .drop: "Tropfen"
-        case .piece: "Stück"
+        case .gram: "G"
+        case .milliliter: "ML"
+        case .teaspoon: "T 🥄"
+        case .tablespoon: "E 🥄"
+        case .drop: "💧"
+        case .piece: "🍕"
         }
     }
     

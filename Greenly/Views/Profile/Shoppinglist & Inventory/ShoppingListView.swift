@@ -1,8 +1,10 @@
 import SwiftUI
 
 struct ShoppingListView: View {
+    
     @Bindable var recipeVM: RecipeViewModel
     @State private var checkedItems: Set<String> = [] // 🟢 Gecheckte Zutaten für Animation
+    
     
     var body: some View {
         NavigationStack {

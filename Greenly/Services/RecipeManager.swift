@@ -42,15 +42,33 @@ final class RecipeManager {
     func fetchRecipes() async throws -> [Recipe] {
         let snapshot = try await db.collection("recipes").getDocuments()
         var recipes: [Recipe] = []
-        
+
         for document in snapshot.documents {
             do {
                 var recipe = try document.data(as: Recipe.self)
-                
-                // 🔥 Zutaten aus Unterkollektion abrufen
-                let ingredients = try await fetchIngredients(forRecipeID: document.documentID)
-                recipe.ingredients = ingredients
-                
+
+                // 🔥 Prüfen, ob Zutaten als Array gespeichert sind (alte Struktur)
+                if let ingredientArray = document["ingredients"] as? [[String: Any]] {
+                    print("⚠️ Alte Zutatenstruktur erkannt, konvertiere...")
+
+                    let ingredients = ingredientArray.compactMap { dict -> Ingredient? in
+                        guard let name = dict["name"] as? String,
+                              let quantity = dict["quantity"] as? Double else {
+                            return nil
+                        }
+                        let unitRawValue = dict["unit"] as? String
+                        let unit = unitRawValue != nil ? MeasurementUnit(rawValue: unitRawValue!) : .gram
+
+                        return Ingredient(name: name, quantity: quantity, unit: unit)
+                    }
+
+                    recipe.ingredients = ingredients
+                } else {
+                    // 🔥 Zutaten aus Unterkollektion abrufen
+                    let ingredients = try await fetchIngredients(forRecipeID: document.documentID)
+                    recipe.ingredients = ingredients
+                }
+
                 recipes.append(recipe)
             } catch {
                 throw RecipeError.decodingFailed(reason: error.localizedDescription)
@@ -63,11 +81,11 @@ final class RecipeManager {
     
     func fetchRecipesForCollection(recipeIDs: [String]) async throws -> [Recipe] {
         guard !recipeIDs.isEmpty else { return [] } // 🔍 Falls keine Rezepte, nichts abrufen
-
+        
         let snapshot = try await db.collection("recipes")
             .whereField(FieldPath.documentID(), in: recipeIDs) // 🔥 Alle Rezepte in einem Query abrufen!
             .getDocuments()
-
+        
         return snapshot.documents.compactMap { try? $0.data(as: Recipe.self) }
     }
     
@@ -94,17 +112,31 @@ final class RecipeManager {
     // MARK: - 📥 Zutaten abrufen
     func fetchIngredients(forRecipeID recipeID: String) async throws -> [Ingredient] {
         let ingredientsRef = db.collection("recipes").document(recipeID).collection("ingredients")
-        
+
         print("📂 Firestore Collection Path: recipes/\(recipeID)/ingredients")
-        
+
         let snapshot = try await ingredientsRef.getDocuments()
-        
+
         print("🔥 Firestore Snapshot Größe: \(snapshot.documents.count)")
-        
+
         let ingredients = snapshot.documents.compactMap { document -> Ingredient? in
-            try? document.data(as: Ingredient.self) // Firestore nutzt jetzt automatisch @DocumentID
+            let name = document["name"] as? String
+            let quantity = document["quantity"] as? Double
+            let unitRawValue = document["unit"] as? String
+
+            print("🧐 Zutat aus Firestore: Name=\(name ?? "Fehlt"), Menge=\(quantity ?? 0.0), Einheit=\(unitRawValue ?? "Fehlt")")
+
+            // Falls `unit` nicht existiert, setzen wir `.gram` als Standardwert
+            let unit = unitRawValue != nil ? MeasurementUnit(rawValue: unitRawValue!) : .gram
+
+            guard let name = name, let quantity = quantity else {
+                print("⚠️ Fehler: Name oder Menge fehlt, Zutat wird ignoriert")
+                return nil
+            }
+
+            return Ingredient(id: document.documentID, name: name, quantity: quantity, unit: unit)
         }
-        
+
         print("✅ Zutaten extrahiert: \(ingredients.count)")
         return ingredients
     }
@@ -114,23 +146,22 @@ final class RecipeManager {
         guard let userID = Auth.auth().currentUser?.uid else {
             throw RecipeError.noUserLoggedIn
         }
-        
-        let recipeRef = db.collection("recipes").document() // Firestore vergibt Rezept-ID
+
+        let recipeRef = db.collection("recipes").document()
         var recipeData = try Firestore.Encoder().encode(recipe)
         recipeData["author"] = userID
-        
-        // 🔥 Entferne die Zutaten aus dem Hauptdokument, sie gehören in eine Unterkollektion!
-        recipeData.removeValue(forKey: "ingredients")
-        
+
+        recipeData.removeValue(forKey: "ingredients") // 🔥 Zutaten gehören in eine Unterkollektion!
+
         try await recipeRef.setData(recipeData)
-        
-        // 🔥 Zutaten als Unterkollektion speichern, Firestore vergibt die IDs automatisch
+
         for ingredient in recipe.ingredients ?? [] {
             let ingredientRef = recipeRef.collection("ingredients").document()
             let validatedQuantity = max(ingredient.quantity ?? 1.0, 0.01)
             try await ingredientRef.setData([
                 "name": ingredient.name,
-                "quantity": validatedQuantity
+                "quantity": validatedQuantity,
+                "unit": ingredient.unit?.rawValue ?? MeasurementUnit.gram.rawValue // ✅ Speichern als String!
             ])
         }
         
@@ -140,10 +171,10 @@ final class RecipeManager {
     // MARK: - ❌ Rezept aus Firestore löschen
     func deleteRecipe(_ recipeID: String) async throws {
         let recipeRef = db.collection("recipes").document(recipeID)
-
+        
         // 🔥 Rezept löschen
         try await recipeRef.delete()
-
+        
         print("✅ Firestore: Rezept erfolgreich gelöscht (ID: \(recipeID))")
     }
     
@@ -182,7 +213,8 @@ final class RecipeManager {
             // 🆕 Falls die Zutat noch nicht existiert
             try await documentRef.setData([
                 "name": ingredient.name,
-                "quantity": ingredient.quantity ?? 0.0
+                "quantity": ingredient.quantity ?? 0.0,
+                "unit": ingredient.unit?.rawValue ?? MeasurementUnit.gram.rawValue
             ])
             
             print("✅ Neue Zutat hinzugefügt: \(ingredient.name) (\(ingredient.quantity ?? 0.0))")
@@ -196,10 +228,11 @@ final class RecipeManager {
         
         return snapshot.documents.compactMap { document in
             guard let name = document["name"] as? String,
-                  let quantity = document["quantity"] as? Double else {
-                return nil
-            }
-            return Ingredient(id: document.documentID, name: name, quantity: quantity)
+                  let quantity = document["quantity"] as? Double,
+                  let unitRawValue = document["unit"] as? String,
+                  let unit = unitRawValue != nil ? MeasurementUnit(rawValue: unitRawValue) : .gram else { return nil }
+            
+            return Ingredient(id: document.documentID, name: name, quantity: quantity, unit: unit)
         }
     }
     
@@ -215,9 +248,9 @@ final class RecipeManager {
     // MARK: - 📦 Vorrat verwalten
     func addIngredientToInventory(_ ingredient: Ingredient) async throws {
         guard let userID = Auth.auth().currentUser?.uid else { throw RecipeError.noUserLoggedIn }
-
+        
         let inventoryRef = db.collection("users").document(userID).collection("inventory").document(ingredient.name.lowercased())
-
+        
         let snapshot = try await inventoryRef.getDocument()
         
         if snapshot.exists {
@@ -228,7 +261,8 @@ final class RecipeManager {
         } else {
             try await inventoryRef.setData([
                 "name": ingredient.name,
-                "quantity": ingredient.quantity ?? 0.0
+                "quantity": ingredient.quantity ?? 0.0,
+                "unit": ingredient.unit?.rawValue ?? MeasurementUnit.gram.rawValue
             ])
             print("✅ Neue Zutat hinzugefügt: \(ingredient.name)")
         }
@@ -236,15 +270,16 @@ final class RecipeManager {
     
     func fetchInventory() async throws -> [Ingredient] {
         guard let userID = Auth.auth().currentUser?.uid else { throw RecipeError.noUserLoggedIn }
-
+        
         let snapshot = try await db.collection("users").document(userID).collection("inventory").getDocuments()
-
+        
         return snapshot.documents.compactMap { document in
             guard let name = document["name"] as? String,
-                  let quantity = document["quantity"] as? Double else {
-                return nil
-            }
-            return Ingredient(id: document.documentID, name: name, quantity: quantity)
+                  let quantity = document["quantity"] as? Double,
+                  let unitRawValue = document["unit"] as? String,
+                  let unit = unitRawValue != nil ? MeasurementUnit(rawValue: unitRawValue) : .gram else { return nil }
+            
+            return Ingredient(id: document.documentID, name: name, quantity: quantity, unit: unit)
         }
     }
     
@@ -258,9 +293,9 @@ final class RecipeManager {
     
     func updateIngredientInInventory(_ ingredientName: String, newQuantity: Double) async throws {
         guard let userID = Auth.auth().currentUser?.uid else { throw RecipeError.noUserLoggedIn }
-
+        
         let inventoryRef = db.collection("users").document(userID).collection("inventory").document(ingredientName.lowercased())
-
+        
         if newQuantity > 0 {
             try await inventoryRef.updateData(["quantity": newQuantity])
             print("🔄 Menge für \(ingredientName) aktualisiert auf \(newQuantity)")
