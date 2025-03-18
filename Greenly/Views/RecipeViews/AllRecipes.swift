@@ -34,12 +34,15 @@ struct AllRecipes: View {
                                 showSearchSheet = true
                             } label: {
                                 Image(systemName: "magnifyingglass")
+                                    .foregroundStyle(Color("textPrimary"))
                             }
 
                             Button {
                                 showCreateRecipeSheet = true
                             } label: {
                                 Image(systemName: "plus")
+                                    .foregroundStyle(Color("textPrimary"))
+
                             }
                         }
                     }
@@ -53,7 +56,7 @@ struct AllRecipes: View {
                         .presentationDetents([.medium, .large])
                 }
             }
-            .background(Color("background"))
+            .background(Color("backgroundPrimary"))
         }
     }
 }

@@ -39,7 +39,7 @@ struct RecipeHeaderView: View {
                             showEditView = true
                         }) {
                             Image(systemName: "pencil")
-                                .foregroundColor(.blue)
+                                .foregroundStyle(.white)
                         }
                         
                         // 🗑 Löschen-Button
@@ -47,7 +47,7 @@ struct RecipeHeaderView: View {
                             showDeleteAlert = true
                         }) {
                             Image(systemName: "trash")
-                                .foregroundColor(.red)
+                                .foregroundStyle(.red)
                         }
                     }
                     

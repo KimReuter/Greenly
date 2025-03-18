@@ -11,7 +11,7 @@ struct GlobalBackground: ViewModifier {
     
     func body(content: Content) -> some View {
         ZStack {
-            Color(Color("background")).ignoresSafeArea()
+            Color(Color("backgroundPrimary")).ignoresSafeArea()
             content
         }
     }

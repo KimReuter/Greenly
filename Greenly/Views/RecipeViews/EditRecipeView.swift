@@ -69,17 +69,21 @@ struct EditRecipeView: View {
                                 newImageData = try? await newImageItem?.loadTransferable(type: Data.self)
                             }
                         }
+                        .foregroundStyle(.white)
                 }
             }
             .navigationTitle("Rezept bearbeiten")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Abbrechen") {
+                    Button {
                         dismiss()
+                    } label: {
+                        Text("Abbrechen")
+                            .foregroundStyle(.white)
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Speichern") {
+                    Button {
                         Task {
                             var updatedRecipe = recipe
                             updatedRecipe.name = newName
@@ -88,6 +92,9 @@ struct EditRecipeView: View {
                             await recipeVM.updateRecipe(recipe, newImageData: newImageData)
                             dismiss() // 🔥 Nach dem Speichern schließen
                         }
+                    } label: {
+                        Text("Speichern")
+                            .foregroundStyle(.white)
                     }
                 }
             }

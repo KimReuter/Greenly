@@ -32,6 +32,7 @@ struct CollectionsView: View {
                     }
                 }
             }
+            .background(Color("backgroundPrimary"))
             .navigationTitle("Meine Sammlungen")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -39,6 +40,7 @@ struct CollectionsView: View {
                         showCreateCollection = true
                     } label: {
                         Image(systemName: "plus")
+                            .foregroundStyle(.white)
                     }
                 }
             }
@@ -64,5 +66,6 @@ struct CollectionsView: View {
                 await collectionVM.fetchCollections()
             }
         }
+        
     }
 }

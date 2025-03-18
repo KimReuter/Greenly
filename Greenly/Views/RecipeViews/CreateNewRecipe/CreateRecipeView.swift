@@ -35,18 +35,26 @@ struct CreateRecipeView: View {
                                     }
                                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(Color("backgroundPrimary"))
             .navigationTitle("Rezept erstellen")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Abbrechen") {
+                    Button {
                         dismiss()
+                    } label: {
+                        Text("Abbrechen")
+                            .foregroundStyle(.white)
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Speichern") {
+                    Button {
                         Task {
                             await saveRecipe()
                         }
+                    } label: {
+                        Text("Speichern")
+                        .foregroundStyle(.white)
                     }
                 }
             }
@@ -54,13 +62,17 @@ struct CreateRecipeView: View {
                 CategoryPickerView(selectedCategories: $selectedCategories)
             }
             .alert("Rezept gespeichert!", isPresented: $showSuccessAlert) {
-                Button("OK") {
+                Button {
                     dismiss() // 🆕 Erst nach Bestätigung schließt sich die View
+                } label: {
+                    Text("OK")
+                        .foregroundStyle(.white)
                 }
             } message: {
                 Text("Dein Rezept wurde erfolgreich erstellt.")
             }
         }
+        .background(Color("backgroundPrimary"))
     }
     
     func saveRecipe() async {
@@ -114,12 +126,16 @@ struct CategoryPickerView: View {
                         }
                     }
                 }
+                .foregroundStyle(.white)
             }
             .navigationTitle("Kategorien wählen")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Fertig") {
+                    Button {
                         dismiss()
+                    } label: {
+                        Text("Fertig")
+                            .foregroundStyle(.white)
                     }
                 }
             }

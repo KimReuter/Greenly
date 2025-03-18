@@ -26,9 +26,9 @@ struct CreateButton: View {
             Text(label)
         }
         .font(.headline)
-        .foregroundStyle(Color("secondaryColor"))
+        .foregroundStyle(Color(.white))
         .frame(width: 350, height: 55)
-        .background(Color("tertiaryColor"))
+        .background(Color("buttonPrimary"))
         .cornerRadius(10)
     }
 }

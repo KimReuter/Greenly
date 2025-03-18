@@ -16,6 +16,7 @@ struct RecipeSearchView: View {
             Form {
                 Section(header: Text("Nach Name oder Beschreibung suchen")) {
                     TextField("Suchtext eingeben...", text: $recipeVM.searchQuery)
+                        .foregroundStyle(Color("backgroundPrimary"))
                 }
                 
                 Section(header: Text("Kategorien wählen")) {
@@ -37,22 +38,31 @@ struct RecipeSearchView: View {
                 
                 Section(header: Text("Nach einer Zutat filtern")) {
                     TextField("Zutat eingeben...", text: $recipeVM.selectedIngredient)
+
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(Color("backgroundPrimary"))
             .navigationTitle("Rezept-Suche")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Abbrechen") {
+                    Button {
                         isPresented = false
+                    } label: {
+                        Text("Abbrechen")
+                            .foregroundStyle(Color("textPrimary"))
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Suchen") {
+                    Button {
                         Task {
                             await recipeVM.applyFilters() // 🔥 Fix: Suche wird angewendet
                             try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 Sekunde warten, damit UI sich aktualisiert
                             isPresented = false
                         }
+                    } label: {
+                        Text("Suchen")
+                            .foregroundStyle(Color("textPrimary"))
                     }
                 }
             }

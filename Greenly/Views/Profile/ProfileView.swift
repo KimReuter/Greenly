@@ -72,7 +72,7 @@ struct ProfileView: View {
                 }
                 .padding(.top)
             }
-            .background(Color("background"))
+            .background(Color("backgroundPrimary"))
             .navigationTitle("👤 Persönlich")
         }
         .sheet(isPresented: $showCollectionSheet) {

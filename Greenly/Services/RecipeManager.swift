@@ -109,6 +109,20 @@ final class RecipeManager {
         return recipes
     }
     
+    // MARK: - Zubereitungsschritte abrufen
+    
+    func fetchPreparationSteps(forRecipeID recipeID: String) async throws -> [PreparationStepType] {
+        let stepsRef = db.collection("recipes").document(recipeID).collection("preparationSteps")
+        
+        let snapshot = try await stepsRef.getDocuments()
+        let steps = snapshot.documents.compactMap { doc in
+            PreparationStepType(rawValue: doc["step"] as? String ?? "")
+        }
+        
+        print("✅ \(steps.count) Zubereitungsschritte geladen")
+        return steps
+    }
+    
     // MARK: - 📥 Zutaten abrufen
     func fetchIngredients(forRecipeID recipeID: String) async throws -> [Ingredient] {
         let ingredientsRef = db.collection("recipes").document(recipeID).collection("ingredients")
@@ -151,21 +165,28 @@ final class RecipeManager {
         var recipeData = try Firestore.Encoder().encode(recipe)
         recipeData["author"] = userID
 
-        recipeData.removeValue(forKey: "ingredients") // 🔥 Zutaten gehören in eine Unterkollektion!
+        recipeData.removeValue(forKey: "ingredients") // 🔥 Zutaten separat speichern
+        recipeData.removeValue(forKey: "preparationSteps") // 🔥 Schritte separat speichern
 
         try await recipeRef.setData(recipeData)
 
+        // 🔥 Zutaten speichern
         for ingredient in recipe.ingredients ?? [] {
             let ingredientRef = recipeRef.collection("ingredients").document()
-            let validatedQuantity = max(ingredient.quantity ?? 1.0, 0.01)
             try await ingredientRef.setData([
                 "name": ingredient.name,
-                "quantity": validatedQuantity,
-                "unit": ingredient.unit?.rawValue ?? MeasurementUnit.gram.rawValue // ✅ Speichern als String!
+                "quantity": ingredient.quantity ?? 0.0,
+                "unit": ingredient.unit?.rawValue ?? MeasurementUnit.gram.rawValue
             ])
         }
+
+        // 🔥 Zubereitungsschritte speichern
+        for (index, step) in (recipe.preparationSteps ?? []).enumerated() {
+            let stepRef = recipeRef.collection("preparationSteps").document("\(index)")
+            try await stepRef.setData(["step": step.rawValue]) // Speichert als String
+        }
         
-        print("✅ Rezept erfolgreich gespeichert: \(recipe.name)")
+        print("✅ Rezept mit \(recipe.preparationSteps?.count ?? 0) Schritten gespeichert!")
     }
     
     // MARK: - ❌ Rezept aus Firestore löschen

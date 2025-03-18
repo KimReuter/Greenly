@@ -59,6 +59,7 @@ struct RecipeCardView: View {
                 .foregroundStyle(.primary)
                 .lineLimit(2)
                 .minimumScaleFactor(0.8)
+                .foregroundStyle(Color("buttonPrimary"))
             
             // 🔹 Kategorie als kleiner Chip (optional)
             if !recipe.category.isEmpty {
@@ -68,7 +69,8 @@ struct RecipeCardView: View {
                             .font(.caption)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 3)
-                            .background(Color.blue.opacity(0.1))
+                            .background(Color(.blue).opacity(0.1))
+                            .foregroundStyle(Color("buttonPrimary"))
                             .cornerRadius(10)
                     }
                 }

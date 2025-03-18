@@ -15,7 +15,6 @@ struct ProfilePictureView: View {
 
     var body: some View {
         VStack {
-            // 📷 **Profilbild als Button**
             PhotosPicker(selection: $selectedImageItem) {
                 ZStack {
                     if let imageData = selectedImageData, let uiImage = UIImage(data: imageData) {

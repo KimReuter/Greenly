@@ -5,13 +5,6 @@
 //  Created by Kim Reuter on 24.02.25.
 //
 
-//
-//  RecipeDetailView.swift
-//  Greenly
-//
-//  Created by Kim Reuter on 24.02.25.
-//
-
 import SwiftUI
 
 struct RecipeDetailView: View {
@@ -26,38 +19,51 @@ struct RecipeDetailView: View {
     @State private var showEditView = false
     @State private var showSaveAlert = false
     @State private var showDeleteAlert = false
-    
+    @State private var showPreparationSteps = false
+
     var body: some View {
-        VStack {
-            ZStack(alignment: .bottom) {
-                
-                RecipeImageView(imageUrl: recipe.imageUrl)
-                
-                RecipeHeaderView(recipe: recipe, recipeVM: recipeVM, collectionVM: collectionVM, showEditView: $showEditView, showAlert: $showAlert, showDeleteAlert: $showDeleteAlert)
-            }
-            .frame(height: UIScreen.main.bounds.height * 0.5)
-            
-            // 🔥 Rezeptbeschreibung
-            ScrollView {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(recipe.description ?? "")
-                        .font(.body)
-                        .italic()
-                        .padding(.horizontal)
+        NavigationStack {
+            VStack {
+                ZStack(alignment: .bottom) {
                     
-                    RecipeIngredientsView(recipe: recipe)
+                    RecipeImageView(imageUrl: recipe.imageUrl)
+                    
+                    RecipeHeaderView(recipe: recipe, recipeVM: recipeVM, collectionVM: collectionVM, showEditView: $showEditView, showAlert: $showAlert, showDeleteAlert: $showDeleteAlert)
                 }
-                .padding()
-            }
-            
-            CreateButton(label: "Jetzt zubereiten") {
-                Task {
-                    await recipeVM.consumeIngredientsForRecipe(recipe)
+                .frame(height: UIScreen.main.bounds.height * 0.5)
+                
+                // 🔥 Rezeptbeschreibung
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(recipe.description ?? "")
+                            .font(.body)
+                            .italic()
+                            .padding(.horizontal)
+                        
+                        RecipeIngredientsView(recipe: recipe)
+                    }
+                    .padding()
                 }
+                
+                CreateButton(label: "Jetzt zubereiten") {
+                    Task {
+                        await recipeVM.consumeIngredientsForRecipe(recipe)
+                        showPreparationSteps.toggle()
+                    }
+                }
+                .padding(.bottom)
+                .fullScreenCover(isPresented: $showPreparationSteps) {
+                            if let steps = recipe.preparationSteps, !steps.isEmpty {
+                                StepByStepPreparationView(steps: steps)
+                            } else {
+                                Text("Keine Zubereitungsschritte vorhanden.")
+                                    .font(.headline)
+                                    .padding()
+                            }
+                        }
             }
-            .padding(.bottom)
         }
-        .background(Color("background"))
+        .background(Color("backgroundPrimary"))
         .edgesIgnoringSafeArea(.top)
         .task {
             await recipeVM.fetchIngredients(for: recipe)
@@ -65,6 +71,12 @@ struct RecipeDetailView: View {
             if let updatedRecipe = recipeVM.recipes.first(where: { $0.id == recipe.id }) {
                 recipe.ingredients = updatedRecipe.ingredients
             }
+        }
+        .onAppear {
+            NotificationCenter.default.post(name: .hideTabBar, object: nil)
+        }
+        .onDisappear {
+            NotificationCenter.default.post(name: .showTabBar, object: nil)
         }
         .alert("Hinzugefügt!", isPresented: $showAlert) {
             Button("OK", role: .cancel) {}
@@ -79,6 +91,7 @@ struct RecipeDetailView: View {
         }) {
             EditRecipeView(recipe: recipe, recipeVM: recipeVM)
         }
+        .presentationDetents([.medium, .large])
         .alert("✅ Gespeichert!", isPresented: $showSaveAlert) {
             Button("OK", role: .cancel) {}
         } message: {
@@ -86,6 +99,7 @@ struct RecipeDetailView: View {
         }
         .alert("Rezept löschen?", isPresented: $showDeleteAlert) {
             Button("Abbrechen", role: .cancel) {}
+                .foregroundStyle(.white)
             Button("Löschen", role: .destructive) {
                 Task {
                     await recipeVM.deleteRecipe(recipe)
@@ -96,7 +110,8 @@ struct RecipeDetailView: View {
             Text("Möchtest du dieses Rezept wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.")
         }
     }
-
+        
+    
     
     // Funktionen
     

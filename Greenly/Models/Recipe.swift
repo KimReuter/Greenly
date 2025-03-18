@@ -17,10 +17,9 @@ struct Recipe: Codable, Identifiable {
     var ingredients: [Ingredient]?
     var imageUrl: String?
     var authorID: String?
-    //    var author: String
+    var preparationSteps: [PreparationStepType]
     //    var preparationTime: Int
     //    var difficulty: Difficulty
-    //    var preparationSteps: [PreparationStepType]
     //    var pictureURL: String?
     //    var tags: [String]
     //    var createdByAdmin: Bool

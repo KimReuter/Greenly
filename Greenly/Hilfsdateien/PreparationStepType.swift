@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum PreparationStepType: Codable, CaseIterable {
+enum PreparationStepType: String, Codable, CaseIterable {
     
     // Vorbereitung
     case gatherIngredients

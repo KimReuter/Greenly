@@ -21,12 +21,16 @@ struct IngredientInputRow: View {
                 .keyboardType(.decimalPad)
                 .frame(width: 80)
 
-            Picker("Einheit", selection: $ingredient.unit) {
+            Picker("", selection: $ingredient.unit) {
                 ForEach(MeasurementUnit.allCases, id: \.self) { unit in
-                    Text(unit.name).tag(unit)
+                    Text(unit.name)
+                        .tag(unit)
+                        .foregroundStyle(.white)
                 }
+                
             }
-            .pickerStyle(MenuPickerStyle()) // 🎨 Platzsparender als WheelPicker
+            .pickerStyle(MenuPickerStyle())
+            .tint(.white)
 
             Button(action: onDelete) {
                 Image(systemName: "minus.circle.fill")

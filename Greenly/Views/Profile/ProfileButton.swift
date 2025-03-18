@@ -16,21 +16,21 @@ struct ProfileButton: View {
         Button(action: action) {
             HStack {
                 Image(systemName: icon)
-                    .foregroundColor(.white)
+                    .foregroundStyle(Color("buttonPrimary"))
                     .padding()
-                    .background(Circle().fill(Color.blue))
+                    .background(Circle().fill(Color.white))
                 
                 Text(title)
                     .font(.headline)
-                    .foregroundColor(.primary)
-                
+                    .foregroundStyle(.white)
+            
                 Spacer()
                 
                 Image(systemName: "chevron.right")
-                    .foregroundColor(.gray)
+                    .foregroundStyle(.white)
             }
             .padding()
-            .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
+            .background(RoundedRectangle(cornerRadius: 12).fill(Color("buttonPrimary")))
             .shadow(radius: 2)
         }
     }

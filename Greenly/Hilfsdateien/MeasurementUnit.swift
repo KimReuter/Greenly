@@ -18,12 +18,12 @@ enum MeasurementUnit: String, Codable, CaseIterable {
     
     var name: String {
         switch self {
-        case .gram: "G"
-        case .milliliter: "ML"
-        case .teaspoon: "T 🥄"
-        case .tablespoon: "E 🥄"
-        case .drop: "💧"
-        case .piece: "🍕"
+        case .gram: "Gramm"
+        case .milliliter: "Milliliter"
+        case .teaspoon: "Teelöffel"
+        case .tablespoon: "Esslöffel"
+        case .drop: "Tropfen"
+        case .piece: "Stück"
         }
     }
     

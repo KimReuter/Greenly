@@ -30,14 +30,24 @@ struct NavigationView: View {
                     .tag(1)
             }
             .ignoresSafeArea(.all, edges: .bottom)
-
+            
+            .onReceive(NotificationCenter.default.publisher(for: .hideTabBar)) { _ in
+                withAnimation {
+                    isTabBarHidden = true
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .showTabBar)) { _ in
+                withAnimation {
+                    isTabBarHidden = false
+                }
+            }
+            
             // ⬇️ FloatingTabBar nur anzeigen, wenn isTabBarHidden false ist
             if !isTabBarHidden {
                 FloatingTabBar(selectedTab: $selectedTab, tabs: tabIcons)
                     .padding(.bottom, 20)
             }
         }
-        .tint(Color("tertiaryColor"))
         .globalBackground()
     }
 }
@@ -60,11 +70,7 @@ struct FloatingTabBar: View {
                             .resizable()
                             .scaledToFit()
                             .frame(width: 24, height: 24)
-                            .foregroundColor(selectedTab == index ? .white : .gray)
-                        
-                        Circle()
-                            .fill(selectedTab == index ? Color.blue : Color.clear)
-                            .frame(width: 6, height: 6)
+                            .foregroundColor(selectedTab == index ? Color("textPrimary") : Color("textTertiary"))
                     }
                 }
                 Spacer()
@@ -74,11 +80,15 @@ struct FloatingTabBar: View {
         .padding(.horizontal, 16)
         .background(
             RoundedRectangle(cornerRadius: 25)
-                .fill(Color.black.opacity(0.8))
+                .fill(Color("buttonPrimary"))
                 .shadow(radius: 5)
+                
         )
         .padding(.horizontal, 30)
     }
 }
 
-
+extension Notification.Name {
+    static let hideTabBar = Notification.Name("hideTabBar")
+    static let showTabBar = Notification.Name("showTabBar")
+}

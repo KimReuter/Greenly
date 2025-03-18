@@ -16,7 +16,10 @@ struct RecipeDetailsView: View {
     var body: some View {
         Section(header: Text("Rezept Details")) {
             TextField("Name", text: $recipeName)
+                .foregroundStyle(.white)
             TextField("Beschreibung", text: $recipeDescription)
+                .foregroundStyle(.white)
+
         }
 
         Section(header: Text("Kategorien")) {
@@ -31,7 +34,6 @@ struct RecipeDetailsView: View {
                         .foregroundColor(.gray)
                 }
                 .padding(8)
-                .background(RoundedRectangle(cornerRadius: 8).stroke(Color.gray, lineWidth: 1))
             }
         }
         .sheet(isPresented: $showCategoryPicker) {

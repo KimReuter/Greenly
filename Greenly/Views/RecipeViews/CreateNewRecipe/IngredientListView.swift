@@ -22,6 +22,7 @@ struct IngredientListView: View {
                 ingredients.append(IngredientInput(name: "", quantity: 0, unit: .gram))
             }) {
                 Label("Zutat hinzufügen", systemImage: "plus")
+                    .foregroundStyle(.white)
             }
         }
     }

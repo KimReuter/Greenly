@@ -16,13 +16,13 @@ struct ProgressCard: View {
             Text(value)
                 .font(.title)
                 .bold()
-                .foregroundColor(.blue)
+                .foregroundColor(.white)
             Text(title)
                 .font(.caption)
-                .foregroundColor(.gray)
+                .foregroundColor(.white)
         }
         .frame(width: 100, height: 80)
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color("buttonPrimary")))
         .shadow(radius: 2)
     }
 }

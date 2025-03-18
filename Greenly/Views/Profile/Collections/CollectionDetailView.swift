@@ -50,7 +50,7 @@ struct CollectionDetailView: View {
                         showAddRecipesSheet = true
                     } label: {
                         Image(systemName: "plus")
-                            .foregroundColor(.green)
+                            .foregroundStyle(.white)
                     }
                 }
             }

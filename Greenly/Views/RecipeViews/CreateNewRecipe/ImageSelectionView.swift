@@ -28,6 +28,7 @@ struct ImageSelectionView: View {
                 .onChange(of: recipeVM.selectedImageItem) {
                     recipeVM.fetchImageFromStorage()
                 }
+                .foregroundStyle(.white)
 
             if let uploadedImageURL = recipeVM.uploadedImageURL {
                 AsyncImage(url: uploadedImageURL) { image in
