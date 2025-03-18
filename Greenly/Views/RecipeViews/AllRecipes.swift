@@ -57,6 +57,16 @@ struct AllRecipes: View {
                 }
             }
             .background(Color("backgroundPrimary"))
+            .onAppear {
+                Task {
+                    do {
+                        try await recipeVM.fetchRecipes() // 🔥 Diese Funktion gibt `Void` zurück, daher kein `let testRecipes = ...`
+                        print("📥 Test: \(recipeVM.recipes.count) Rezepte aus Firestore geladen") // Nutze direkt `recipeVM.recipes`
+                    } catch {
+                        print("❌ Fehler beim Testladen der Rezepte: \(error.localizedDescription)")
+                    }
+                }
+            }
         }
     }
 }

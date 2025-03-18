@@ -20,7 +20,7 @@ struct RecipeDetailView: View {
     @State private var showSaveAlert = false
     @State private var showDeleteAlert = false
     @State private var showPreparationSteps = false
-
+    
     var body: some View {
         NavigationStack {
             VStack {
@@ -35,7 +35,7 @@ struct RecipeDetailView: View {
                 // 🔥 Rezeptbeschreibung
                 ScrollView {
                     VStack(alignment: .leading, spacing: 10) {
-                        Text(recipe.description ?? "")
+                        Text(recipe.description)
                             .font(.body)
                             .italic()
                             .padding(.horizontal)
@@ -52,15 +52,18 @@ struct RecipeDetailView: View {
                     }
                 }
                 .padding(.bottom)
+                .task {
+                    await recipeVM.fetchPreparationSteps(for: recipe)
+                }
                 .fullScreenCover(isPresented: $showPreparationSteps) {
-                            if let steps = recipe.preparationSteps, !steps.isEmpty {
-                                StepByStepPreparationView(steps: steps)
-                            } else {
-                                Text("Keine Zubereitungsschritte vorhanden.")
-                                    .font(.headline)
-                                    .padding()
-                            }
-                        }
+                    if !recipeVM.preparationSteps.isEmpty {
+                        StepByStepPreparationView(steps: recipeVM.preparationSteps)
+                    } else {
+                        Text("Keine Zubereitungsschritte vorhanden.")
+                            .font(.headline)
+                            .padding()
+                    }
+                }
             }
         }
         .background(Color("backgroundPrimary"))
@@ -110,15 +113,7 @@ struct RecipeDetailView: View {
             Text("Möchtest du dieses Rezept wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.")
         }
     }
-        
     
-    
-    // Funktionen
-    
-    
-    func prepareRecipe() {
-        print("🍽 Rezept starten")
-    }
 }
 
 

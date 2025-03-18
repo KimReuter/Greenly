@@ -59,6 +59,15 @@ final class CollectionManager {
         print("🔥 Rezept \(recipeID) aus Sammlung \(collectionID) entfernt")
     }
     
+    func deleteCollection(collectionID: String) async throws {
+        guard let userID = Auth.auth().currentUser?.uid else { throw CollectionError.noUserLoggedIn }
+        
+        let collectionRef = db.collection("users").document(userID).collection("collections").document(collectionID)
+        
+        try await collectionRef.delete()
+        print("✅ Sammlung gelöscht: \(collectionID)")
+    }
+    
     enum CollectionError: LocalizedError {
         case noUserLoggedIn
         var errorDescription: String? { return "Kein Benutzer eingeloggt." }

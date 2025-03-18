@@ -44,8 +44,21 @@ final class RecipeManager {
         var recipes: [Recipe] = []
 
         for document in snapshot.documents {
+            print("📄 Firestore-Dokument: \(document.data())") // 🔥 Debugging: Zeigt alle Daten des Rezepts
+
             do {
                 var recipe = try document.data(as: Recipe.self)
+                recipe.id = document.documentID // 🔥 WICHTIG: Firestore-Dokument-ID setzen
+                
+                // 🔥 Falls `category` fehlt, setzen wir ein leeres Array
+                if document["category"] == nil {
+                    recipe.category = []
+                }
+
+                // 🔥 Falls `preparationSteps` fehlt, setzen wir nil (weil jetzt optional)
+                if document["preparationSteps"] == nil {
+                    recipe.preparationSteps = nil
+                }
 
                 // 🔥 Prüfen, ob Zutaten als Array gespeichert sind (alte Struktur)
                 if let ingredientArray = document["ingredients"] as? [[String: Any]] {
@@ -61,7 +74,6 @@ final class RecipeManager {
 
                         return Ingredient(name: name, quantity: quantity, unit: unit)
                     }
-
                     recipe.ingredients = ingredients
                 } else {
                     // 🔥 Zutaten aus Unterkollektion abrufen
@@ -71,12 +83,15 @@ final class RecipeManager {
 
                 recipes.append(recipe)
             } catch {
+                print("❌ Fehler beim Dekodieren des Rezepts mit ID: \(document.documentID)")
+                print("🚨 Firestore-Daten: \(document.data())") // 🔥 Zeigt das fehlerhafte Rezept an
                 throw RecipeError.decodingFailed(reason: error.localizedDescription)
             }
         }
+
+        print("📥 `fetchRecipes()` hat \(recipes.count) Rezepte geladen.")
         return recipes
     }
-    
     // MARK: - Rezepte für Sammlung laden
     
     func fetchRecipesForCollection(recipeIDs: [String]) async throws -> [Recipe] {
@@ -109,19 +124,7 @@ final class RecipeManager {
         return recipes
     }
     
-    // MARK: - Zubereitungsschritte abrufen
     
-    func fetchPreparationSteps(forRecipeID recipeID: String) async throws -> [PreparationStepType] {
-        let stepsRef = db.collection("recipes").document(recipeID).collection("preparationSteps")
-        
-        let snapshot = try await stepsRef.getDocuments()
-        let steps = snapshot.documents.compactMap { doc in
-            PreparationStepType(rawValue: doc["step"] as? String ?? "")
-        }
-        
-        print("✅ \(steps.count) Zubereitungsschritte geladen")
-        return steps
-    }
     
     // MARK: - 📥 Zutaten abrufen
     func fetchIngredients(forRecipeID recipeID: String) async throws -> [Ingredient] {
@@ -179,14 +182,65 @@ final class RecipeManager {
                 "unit": ingredient.unit?.rawValue ?? MeasurementUnit.gram.rawValue
             ])
         }
-
-        // 🔥 Zubereitungsschritte speichern
-        for (index, step) in (recipe.preparationSteps ?? []).enumerated() {
-            let stepRef = recipeRef.collection("preparationSteps").document("\(index)")
-            try await stepRef.setData(["step": step.rawValue]) // Speichert als String
+        // 🔥 Zubereitungsschritte speichern (nur wenn vorhanden)
+        if let steps = recipe.preparationSteps {
+            for (index, step) in steps.enumerated() {
+                let stepRef = recipeRef.collection("preparationSteps").document("\(index)")
+                try await stepRef.setData(["step": step.rawValue])
+            }
         }
         
         print("✅ Rezept mit \(recipe.preparationSteps?.count ?? 0) Schritten gespeichert!")
+
+    }
+    
+    // MARK: - Zubereitungsschritte abrufen & ändern
+    
+    func fetchPreparationSteps(forRecipeID recipeID: String) async throws -> [PreparationStepType] {
+        let stepsRef = db.collection("recipes").document(recipeID).collection("preparationSteps")
+        
+        let snapshot = try await stepsRef.getDocuments()
+        let steps = snapshot.documents.compactMap { doc in
+            PreparationStepType(rawValue: doc["step"] as? String ?? "")
+        }
+        
+        print("✅ \(steps.count) Zubereitungsschritte geladen")
+        return steps
+    }
+    
+    func updatePreparationSteps(forRecipeID recipeID: String, newSteps: [PreparationStepType]) async throws {
+        let recipeRef = db.collection("recipes").document(recipeID)
+        let stepsRef = recipeRef.collection("preparationSteps")
+
+        // 🔥 Bestehende Schritte löschen
+        let snapshot = try await stepsRef.getDocuments()
+        await withTaskGroup(of: Void.self) { group in
+            for doc in snapshot.documents {
+                group.addTask {
+                    do {
+                        try await doc.reference.delete()
+                    } catch {
+                        print("❌ Fehler beim Löschen eines Schritts: \(error.localizedDescription)")
+                    }
+                }
+            }
+        }
+
+        // 🔥 Neue Schritte speichern
+        await withTaskGroup(of: Void.self) { group in
+            for (index, step) in newSteps.enumerated() {
+                group.addTask {
+                    do {
+                        let stepRef = stepsRef.document("\(index)")
+                        try await stepRef.setData(["step": step.rawValue])
+                    } catch {
+                        print("❌ Fehler beim Speichern eines Schritts: \(error.localizedDescription)")
+                    }
+                }
+            }
+        }
+
+        print("✅ Zubereitungsschritte für Rezept-ID \(recipeID) erfolgreich gespeichert: \(newSteps.count) Schritte")
     }
     
     // MARK: - ❌ Rezept aus Firestore löschen
@@ -206,7 +260,7 @@ final class RecipeManager {
         
         let recipeRef = db.collection("recipes").document(recipeID)
         
-        var recipeData = try Firestore.Encoder().encode(recipe)
+        let recipeData = try Firestore.Encoder().encode(recipe)
         
         try await recipeRef.updateData(recipeData)
         print("✅ Firestore: Rezept \(recipe.name) erfolgreich aktualisiert")

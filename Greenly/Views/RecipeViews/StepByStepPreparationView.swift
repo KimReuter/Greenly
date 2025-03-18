@@ -14,6 +14,8 @@ struct StepByStepPreparationView: View {
     
     var body: some View {
         VStack {
+            Spacer()
+            
             Text("\(currentStepIndex + 1)/\(steps.count)")
                 .font(.largeTitle)
                 .fontWeight(.bold)
@@ -33,8 +35,8 @@ struct StepByStepPreparationView: View {
                     Text("← Zurück")
                         .padding()
                         .frame(maxWidth: .infinity)
-                        .background(currentStepIndex == 0 ? Color.gray : Color.blue)
-                        .foregroundColor(.white)
+                        .background(.gray)
+                        .foregroundStyle(.white)
                         .cornerRadius(10)
                 }
                 .disabled(currentStepIndex == 0)
@@ -43,7 +45,7 @@ struct StepByStepPreparationView: View {
                     Text(currentStepIndex == steps.count - 1 ? "Fertig 🎉" : "Weiter →")
                         .padding()
                         .frame(maxWidth: .infinity)
-                        .background(Color.green)
+                        .background(Color("buttonPrimary"))
                         .foregroundColor(.white)
                         .cornerRadius(10)
                 }
@@ -52,6 +54,7 @@ struct StepByStepPreparationView: View {
         }
         .navigationTitle("Zubereitung")
         .navigationBarTitleDisplayMode(.inline)
+        .background(Color("backgroundPrimary"))
     }
     
     private func goBack() {

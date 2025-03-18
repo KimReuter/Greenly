@@ -35,6 +35,8 @@ final class RecipeViewModel {
     var selectedImageData: Data?
     var uploadedImageRef: ImageRef?
     
+    var preparationSteps: [PreparationStepType] = []
+    
     var uploadedImageURL: URL? {
         guard let imageRef = uploadedImageRef else { return nil }
         return URL(string: imageRef.url)
@@ -61,8 +63,12 @@ final class RecipeViewModel {
                 print("🔥 observeRecipes wurde aufgerufen. Anzahl neue Rezepte: \(newRecipes.count)")
                 Task {
                     self.recipes = newRecipes
+                    print("📥 Rezepte aus Firestore:")
+                    for recipe in newRecipes {
+                        print(" - \(recipe.name) (ID: \(recipe.id ?? "Keine ID"))")
+                    }
                     await self.applyFilters()
-                    print("✅ Live-Update: \(newRecipes.count) Rezepte geladen")
+                    print("✅ Live-Update: \(self.recipes.count) Rezepte geladen")
                 }
             }
         } catch {
@@ -131,14 +137,14 @@ final class RecipeViewModel {
     // MARK: - 📥 Zutaten für ein Rezept abrufen
     func fetchIngredients(for recipe: Recipe) async {
         guard let recipeID = recipe.id else { return }
-
+        
         do {
             let loadedIngredients = try await recipeManager.fetchIngredients(forRecipeID: recipeID)
-
+            
             for ingredient in loadedIngredients {
                 print("🥄 Geladene Zutat: \(ingredient.name), Menge: \(ingredient.quantity ?? 0.0) \(ingredient.unit?.name ?? "Gramm")")
             }
-
+            
             if let index = recipes.firstIndex(where: { $0.id == recipeID }) {
                 recipes[index].ingredients = loadedIngredients
             }
@@ -150,17 +156,17 @@ final class RecipeViewModel {
     // MARK: - 📤 Rezept erstellen
     func createRecipe(_ recipe: Recipe) async throws {
         var updatedRecipe = recipe
-
+        
         // 🛠 Lokale Kopie des Arrays erstellen
         var updatedIngredients = updatedRecipe.ingredients ?? []
-
+        
         for i in 0..<updatedIngredients.count {
             updatedIngredients[i].unit = updatedIngredients[i].unit ?? .gram
         }
-
+        
         // 🔄 Aktualisierte Zutaten in `updatedRecipe` speichern
         updatedRecipe.ingredients = updatedIngredients
-
+        
         try await recipeManager.createRecipe(updatedRecipe)
         print("✅ Rezept erstellt mit Zutaten: \(updatedRecipe.ingredients?.count ?? 0)")
     }
@@ -193,17 +199,17 @@ final class RecipeViewModel {
     func updateRecipe(_ updatedRecipe: Recipe, newImageData: Data?) async {
         do {
             var recipeToUpdate = updatedRecipe
-
+            
             // 🛠 Lokale Kopie der Zutaten erstellen
             var updatedIngredients = recipeToUpdate.ingredients ?? []
-
+            
             for i in 0..<updatedIngredients.count {
                 updatedIngredients[i].unit = updatedIngredients[i].unit ?? .gram
             }
-
+            
             // 🔄 Aktualisierte Zutaten in `recipeToUpdate` speichern
             recipeToUpdate.ingredients = updatedIngredients
-
+            
             try await recipeManager.updateRecipe(recipeToUpdate)
             print("✅ Rezept erfolgreich aktualisiert: \(recipeToUpdate.name)")
         } catch {
@@ -227,7 +233,7 @@ final class RecipeViewModel {
             var ingredientToAdd = ingredient
             ingredientToAdd.quantity = missingQuantity
             ingredientToAdd.unit = ingredient.unit // 🔥 `unit` beibehalten
-
+            
             try await recipeManager.addIngredientToShoppingList(ingredientToAdd)
             await fetchShoppingList()
         } catch {
@@ -343,16 +349,16 @@ final class RecipeViewModel {
             let existingIngredient = inventory.first { $0.name.lowercased() == ingredient.name.lowercased() }
             let existingQuantity = existingIngredient?.quantity ?? 0.0
             let newQuantity = existingQuantity + (ingredient.quantity ?? 0.0)
-
+            
             // 🔥 Einheit beibehalten oder Standard setzen
             let unit = ingredient.unit
-
+            
             // 📥 Zutat ins Inventar hinzufügen
             try await recipeManager.addIngredientToInventory(Ingredient(name: ingredient.name, quantity: newQuantity, unit: unit))
-
+            
             // 🗑 Zutat aus der Einkaufsliste entfernen
             try await recipeManager.removeIngredientFromShoppingList(ingredient.name)
-
+            
             print("✅ \(ingredient.name) aus Einkaufsliste ins Inventar verschoben")
             await fetchInventory()
             await fetchShoppingList() // 🔄 Aktualisieren nach Bewegung
@@ -416,7 +422,7 @@ final class RecipeViewModel {
     
     func uploadImage(data: Data) async throws -> String {
         print("🚀 Starte Upload zu Imgur...")
-
+        
         do {
             let uploadedImageRef = try await imageRepository.uploadImage(data: data)
             print("✅ Bild erfolgreich hochgeladen: \(uploadedImageRef.url)")
@@ -437,6 +443,42 @@ final class RecipeViewModel {
             self.uploadedImageRef = nil
         } catch {
             errorMessage = error.localizedDescription
+        }
+    }
+    
+    // MARK: - Zubereitungsschritte laden & ändern
+    
+    func fetchPreparationSteps(for recipe: Recipe) async {
+        guard let recipeID = recipe.id else {
+            print("⚠️ Kein Rezept-ID gefunden, kann Schritte nicht laden.")
+            return
+        }
+        
+        do {
+            let steps = try await recipeManager.fetchPreparationSteps(forRecipeID: recipeID)
+            await MainActor.run {
+                self.preparationSteps = steps
+            }
+            print("✅ Zubereitungsschritte für '\(recipe.name)' geladen: \(steps.count) Schritte")
+        } catch {
+            print("❌ Fehler beim Laden der Zubereitungsschritte: \(error.localizedDescription)")
+        }
+    }
+    
+    func updatePreparationSteps(for recipe: Recipe, newSteps: [PreparationStepType]) async {
+        guard let recipeID = recipe.id else {
+            print("⚠️ Kein Rezept-ID gefunden, kann Schritte nicht speichern.")
+            return
+        }
+        
+        do {
+            try await recipeManager.updatePreparationSteps(forRecipeID: recipeID, newSteps: newSteps)
+            await MainActor.run {
+                self.preparationSteps = newSteps
+            }
+            print("✅ Zubereitungsschritte für '\(recipe.name)' aktualisiert: \(newSteps.count) Schritte")
+        } catch {
+            print("❌ Fehler beim Speichern der Zubereitungsschritte: \(error.localizedDescription)")
         }
     }
     

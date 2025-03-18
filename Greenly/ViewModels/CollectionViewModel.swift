@@ -123,4 +123,19 @@ final class CollectionViewModel {
         }
     }
     
+    func deleteCollection(collectionID: String) async {
+        do {
+            try await collectionManager.deleteCollection(collectionID: collectionID)
+
+            // 🔥 UI-Update: Sammlung aus der Liste entfernen
+            collections.removeAll { $0.id == collectionID }
+            collectionRecipes.removeValue(forKey: collectionID)
+
+            print("✅ Sammlung erfolgreich gelöscht!")
+        } catch {
+            print("❌ Fehler beim Löschen der Sammlung: \(error.localizedDescription)")
+            errorMessage = error.localizedDescription
+        }
+    }
+    
 }
