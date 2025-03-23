@@ -85,7 +85,7 @@ Easier Approach: Firebase Firestore with simple rule-based filtering (e.g., show
 Advanced Approach: Core ML for machine learning-based personalized recommendations (would require training a model)  
 Recommendation: Start with the rule-based approach in Firebase and expand later with Core ML for a more advanced experience
 
-## 4️⃣ Instalattion
+## 4️⃣ Installation
 
 ### Run the Project in Xcode
 
