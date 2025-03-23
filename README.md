@@ -1,4 +1,4 @@
-![Design ohne Titel-4](https://github.com/user-attachments/assets/39e410bf-633f-472c-8423-be8b345c03c8)
+![Simulator Screenshot - iPhone 16 Pro - 2025-03-19 at 09 27 28](https://github.com/user-attachments/assets/3482c3d7-59b7-4fcd-a056-6e1bfb048622)![Design ohne Titel-4](https://github.com/user-attachments/assets/39e410bf-633f-472c-8423-be8b345c03c8)
 
 ****Greenly is a Swift-based Application for more Sustainability****
 
@@ -8,12 +8,19 @@ Greenly helps you discover and create sustainable alternatives to cosmetics and 
 
 # Introduction
 - [Screenshots](#screenshots)
-- [Installation](#installation)
 - [Features](#features)
 - [Swift Technology Implementation](#swift-technology-implementation)
+- [Installation](#installation)
 - [Contact/Authors](#contact/authors)
 
 ## 1️⃣ Screenshots
+![Simulator Screenshot - iPhone 16 Pro - 2025-03-19 at 09 27 28](https://github.com/user-attachments/assets/9126ac93-3f04-4b51-b063-3de8acb35e25)
+
+### 🧼 Dashboard-Übersicht
+
+
+### 🍋 Rezept-Detailansicht
+
 
 
 ## 2️⃣ Features
