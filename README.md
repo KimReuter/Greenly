@@ -1,5 +1,3 @@
-![Simulator Screenshot - iPhone 16 Pro - 2025-03-19 at 09 27 28](https://github.com/user-attachments/assets/3482c3d7-59b7-4fcd-a056-6e1bfb048622)![Design ohne Titel-4](https://github.com/user-attachments/assets/39e410bf-633f-472c-8423-be8b345c03c8)
-
 ****Greenly is a Swift-based Application for more Sustainability****
 
 # Overview
@@ -14,13 +12,32 @@ Greenly helps you discover and create sustainable alternatives to cosmetics and 
 - [Contact/Authors](#contact/authors)
 
 ## 1️⃣ Screenshots
-![Simulator Screenshot - iPhone 16 Pro - 2025-03-19 at 09 27 28](https://github.com/user-attachments/assets/9126ac93-3f04-4b51-b063-3de8acb35e25)
 
-### 🧼 Dashboard-Übersicht
+<table>
+  <tr>
+    <td align="center">
+      <strong>Dashboard</strong><br>
+      <img src="https://github.com/user-attachments/assets/9126ac93-3f04-4b51-b063-3de8acb35e25" width="200" alt="Dashboard Screenshot"/>
+    </td>
+    <td align="center">
+      <strong>Rezept-Detailansicht</strong><br>
+      <img src="https://github.com/user-attachments/assets/98ebce40-98da-4a4e-82f9-971396b21a57" width="200" alt="Rezept-Detailansicht Screenshot"/>
+    </td>
+    <td align="center">
+      <strong>Shopping-Liste</strong><br>
+      <img src="https://github.com/user-attachments/assets/f72336c8-aab1-43f2-9992-613ef385c6e9" width="200" alt="Shopping-Liste Screenshot"/>
+    </td>
+  </tr>
+</table>
 
+### 📋 Eigene Sammlung erstellen
+![Simulator Screenshot - iPhone 16 Pro - 2025-03-19 at 09 30 42](https://github.com/user-attachments/assets/57d89423-1ddb-4a28-98c2-e6eae5ae92d8)
 
-### 🍋 Rezept-Detailansicht
+### ⊕ Rezepte zur Sammlung hinzufügen 
+![Simulator Screenshot - iPhone 16 Pro - 2025-03-19 at 09 30 58](https://github.com/user-attachments/assets/29cc50aa-043d-4e9c-aa16-36b6bf114086)
 
+### 🎨 Eigene Rezepte erstellen
+![Simulator Screenshot - iPhone 16 Pro - 2025-03-19 at 10 39 32](https://github.com/user-attachments/assets/a3a192c3-f0c0-4c28-b83f-9c6b22f02b5d)
 
 
 ## 2️⃣ Features
