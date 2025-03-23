@@ -30,15 +30,22 @@ Greenly helps you discover and create sustainable alternatives to cosmetics and 
   </tr>
 </table>
 
-### 📋 Eigene Sammlung erstellen
-![Simulator Screenshot - iPhone 16 Pro - 2025-03-19 at 09 30 42](https://github.com/user-attachments/assets/57d89423-1ddb-4a28-98c2-e6eae5ae92d8)
-
-### ⊕ Rezepte zur Sammlung hinzufügen 
-![Simulator Screenshot - iPhone 16 Pro - 2025-03-19 at 09 30 58](https://github.com/user-attachments/assets/29cc50aa-043d-4e9c-aa16-36b6bf114086)
-
-### 🎨 Eigene Rezepte erstellen
-![Simulator Screenshot - iPhone 16 Pro - 2025-03-19 at 10 39 32](https://github.com/user-attachments/assets/a3a192c3-f0c0-4c28-b83f-9c6b22f02b5d)
-
+<table>
+  <tr>
+    <td align="center">
+      <strong>Sammlung erstellen</strong><br>
+      <img src="https://github.com/user-attachments/assets/57d89423-1ddb-4a28-98c2-e6eae5ae92d8" width="200" alt="Sammlung erstellen Screenshot"/>
+    </td>
+    <td align="center">
+      <strong>Rezept hinzufügen</strong><br>
+      <img src="https://github.com/user-attachments/assets/29cc50aa-043d-4e9c-aa16-36b6bf114086" width="200" alt="Rezept hinzufügen Screenshot"/>
+    </td>
+    <td align="center">
+      <strong>Rezept erstellen</strong><br>
+      <img src="https://github.com/user-attachments/assets/a3a192c3-f0c0-4c28-b83f-9c6b22f02b5d" width="200" alt="Rezept erstellen Screenshot"/>
+    </td>
+  </tr>
+</table>
 
 ## 2️⃣ Features
 
